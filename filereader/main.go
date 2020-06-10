@@ -28,6 +28,8 @@ func main() {
 			panic(err)
 		}
 
+		fName := strings.ReplaceAll(info.Name(), ".pdf", "")
+
 		fullstopReg := regexp.MustCompile(`\.{2,}`)
 		markReg := regexp.MustCompile(`\[\d+\]`)
 		markRegRound := regexp.MustCompile(`\(\d+\)`)
@@ -42,7 +44,7 @@ func main() {
 		strdata = strings.ReplaceAll(strdata, "_", "")
 		strdata = strings.ReplaceAll(strdata, "\r\n", " ")
 
-		err = ioutil.WriteFile(dir+"/"+info.Name()+".filtered", []byte(strdata), 0644)
+		err = ioutil.WriteFile(dir+"/"+fName+".filtered", []byte(strdata), 0644)
 
 		return nil
 	})
