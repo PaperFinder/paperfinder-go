@@ -49,18 +49,18 @@ func main() {
 			panic(err)
 		}
 		for _, unit := range unlist {
-			file, err4 := os.Open("./_past-papers/" + subject + "/" + unit)
-			if err4 != nil {
+			file, err := os.Open("./_past-papers/" + subject + "/" + unit)
+			if err != nil {
 				panic(err4)
 			}
-			qplist, err3 := file.Readdirnames(0)
-			if err3 != nil {
-				panic(err3)
+			qplist, err := file.Readdirnames(0)
+			if err != nil {
+				panic(err)
 			}
 			for _, qp := range qplist {
-				paper, err1 := os.Open("./_past-papers/" + subject + "/" + unit + "/" + qp)
-				if err1 != nil {
-					panic(err1)
+				paper, err := os.Open("./_past-papers/" + subject + "/" + unit + "/" + qp)
+				if err != nil {
+					panic(err)
 				}
 				b, err := ioutil.ReadAll(paper)
 				if err != nil {
