@@ -14,7 +14,7 @@ func main() {
 	finder.Use(logger.New())
 
 	finder.Handle("GET", "/", func(context iris.Context) {
-		context.ServeFile("./html-templates/index.html", false)
+		context.ServeFile("./_html-templates/index.html", false)
 	})
 
 	finder.Handle("GET", "/finder", func(context iris.Context) {

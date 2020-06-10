@@ -43,6 +43,7 @@ func main() {
 		strdata = strings.ReplaceAll(strdata, ".", " ")
 		strdata = strings.ReplaceAll(strdata, "_", "")
 		strdata = strings.ReplaceAll(strdata, "\r\n", " ")
+		strdata = strings.ReplaceAll(strdata, "\n", " ")
 
 		err = ioutil.WriteFile(dir+"/"+fName+".filtered", []byte(strdata), 0644)
 
