@@ -35,9 +35,9 @@ func main() {
 		}
 		subject := context.URLParam("subject")
 		question := context.URLParam("question")
-		file, err34 := os.Open("./_past-papers/" + subject)
-		if err34 != nil {
-			panic(err34)
+		file, err := os.Open("./_past-papers/" + subject)
+		if err != nil {
+			panic(err)
 		}
 		unlist, err := file.Readdirnames(0)
 		if err != nil {
@@ -51,7 +51,7 @@ func main() {
 		for _, unit := range unlist {
 			file, err := os.Open("./_past-papers/" + subject + "/" + unit)
 			if err != nil {
-				panic(err4)
+				panic(err)
 			}
 			qplist, err := file.Readdirnames(0)
 			if err != nil {
