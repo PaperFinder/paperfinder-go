@@ -15,4 +15,5 @@
 # vendor/
 
 #Other
-/past-papers/
+past-papers-text
+.vscode
