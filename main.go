@@ -1,8 +1,10 @@
 package main
 
 import (
+	"io/ioutil"
 	"os"
 
+	"github.com/blevesearch/bleve"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
@@ -29,24 +31,59 @@ func main() {
 		if !context.URLParamExists("subject") ||
 			!context.URLParamExists("question") ||
 			context.URLParam("question") == "" {
-
 			context.Redirect("/", iris.StatusSeeOther)
 		}
-
 		subject := context.URLParam("subject")
 		question := context.URLParam("question")
-		switch subject {
-		case "ph":
-			context.WriteString("Physics: ")
-		case "bio":
-			context.WriteString("Biology: ")
-		case "chem":
-			context.WriteString("Chemistry: ")
-		case "pmath":
-			context.WriteString("Pure Maths: ")
+		file, err34 := os.Open("./_past-papers/" + subject)
+		if err34 != nil {
+			panic(err34)
 		}
-		context.WriteString(question)
+		unlist, err := file.Readdirnames(0)
+		if err != nil {
+			panic(err)
+		}
+		mapping := bleve.NewIndexMapping()
+		index1, err := bleve.New("./_past-papers/"+subject+"/"+"index.bleve", mapping)
+		if err != nil {
+			panic(err)
+		}
+		for _, unit := range unlist {
+			file, err4 := os.Open("./_past-papers/" + subject + "/" + unit)
+			if err4 != nil {
+				panic(err4)
+			}
+			qplist, err3 := file.Readdirnames(0)
+			if err3 != nil {
+				panic(err3)
+			}
+			for _, qp := range qplist {
+				paper, err1 := os.Open("./_past-papers/" + subject + "/" + unit + "/" + qp)
+				if err1 != nil {
+					panic(err1)
+				}
+				b, err := ioutil.ReadAll(paper)
+				if err != nil {
+					panic(err)
+				}
+				index1.Index(paper.Name(), b)
+			}
+
+		}
+		index1.Close()
+		index, err := bleve.Open("./_past-papers/" + subject + "/" + "index.bleve")
+		if err != nil {
+			panic(err)
+		}
+		query := bleve.NewMatchQuery(question)
+		search := bleve.NewSearchRequest(query)
+		searchResults, err := index.Search(search)
+		if err != nil {
+			panic(err)
+		}
+		//I have no idea what I'm doing fuck yeah
+		context.WriteString(question + "WITH RESULTS OF: " + searchResults.String())
 	})
 
-	finder.Run(iris.Addr(":80"), iris.WithoutServerError(iris.ErrServerClosed))
+	finder.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
 }
