@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/kataras/iris/v12"
+	"os"
 
+	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
 )
@@ -12,9 +13,16 @@ func main() {
 	finder.Logger().SetLevel("debug")
 	finder.Use(recover.New())
 	finder.Use(logger.New())
-
+	finder.RegisterView(iris.HTML("./_html-templates", ".html"))
 	finder.Handle("GET", "/", func(context iris.Context) {
-		context.ServeFile("./_html-templates/index.html", false)
+		//In the future probably we will use a db for the subjects rather than scanning the folder each time.
+		file, err := os.Open("./_past-papers")
+		if err != nil {
+			panic(err)
+		}
+		list, _ := file.Readdirnames(0)
+		context.ViewData("subjects", list)
+		context.View("index.html")
 	})
 
 	finder.Handle("GET", "/finder", func(context iris.Context) {

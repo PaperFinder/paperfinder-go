@@ -7,10 +7,14 @@
         <h1>Paper Finder v3</h1>
         <form action="/finder" method="GET">
             <select name="subject" id="subjects">
+                {{range .subjects}}
+                <option value="{{.}}">{{.}}</option>
+                {{end}}
+                <!-- test
                 <option value="phys">Physics</option>
                 <option value="chem">Chemistry</option>
                 <option value="pmath">Pure Maths</option>
-                <option value="bio">Biology</option>
+                <option value="bio">Biology</option> -->
             </select>
             <input type="text" name="question" placeholder="Enter your question">
             <input type="submit">
