@@ -9,7 +9,7 @@ import (
 
 func main() {
 	finder := iris.New()
-	finder.Logger().SetLevel("info")
+	finder.Logger().SetLevel("debug")
 	finder.Use(recover.New())
 	finder.Use(logger.New())
 
@@ -18,10 +18,26 @@ func main() {
 	})
 
 	finder.Handle("GET", "/finder", func(context iris.Context) {
-		if !context.URLParamExists("subject") || !context.URLParamExists("question") || context.URLParam("question") == "" {
+		if !context.URLParamExists("subject") ||
+			!context.URLParamExists("question") ||
+			context.URLParam("question") == "" {
+
 			context.Redirect("/", iris.StatusSeeOther)
 		}
-		context.WriteString(context.URLParam("question"))
+
+		subject := context.URLParam("subject")
+		question := context.URLParam("question")
+		switch subject {
+		case "ph":
+			context.WriteString("Physics: ")
+		case "bio":
+			context.WriteString("Biology: ")
+		case "chem":
+			context.WriteString("Chemistry: ")
+		case "pmath":
+			context.WriteString("Pure Maths: ")
+		}
+		context.WriteString(question)
 	})
 
 	finder.Run(iris.Addr(":80"), iris.WithoutServerError(iris.ErrServerClosed))
