@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <script defer src="js/index.js"></script>
-    </head>
-    <body>
-        <h1>Paper Finder v3</h1>
+
+<head>
+    <title>Paper Finder</title>
+    <link rel="stylesheet" href="../css/main.css">
+
+    <script defer src="../js/index.js"></script>
+</head>
+
+<body>
+    <div class="wrapper">
+        <h1><span class="icon" id="book">📖</span>Paper Finder<span class="icon" id="glass">🔍</span></h1>
+
         <form action="/finder" method="GET">
             <select name="subject" id="subjects">
                 <option value="phys">Physics</option>
@@ -12,8 +19,11 @@
                 <option value="chem">Chemistry</option>
                 <option value="pmath">Pure Maths</option>
             </select>
+
             <input type="text" name="question" id="question" placeholder="Enter your question">
-            <input type="button" onclick="search()" value = "Find my answer">
+            <input type="button" id="button" onclick="search()" value="Find my answer">
         </form>
-    </body>
+    </div>
+</body>
+
 </html>

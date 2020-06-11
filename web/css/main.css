@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Raleway&display=swap');
+
+* {
+    font-family: Raleway, sans-serif;
+}
+
+body {
+    background-color: whitesmoke;
+    padding: 1vw;
+}
+
+h1 {
+    font-size: 4em;
+    text-align: center;
+}
+
+.wrapper {
+    display: block;
+    margin: 0 auto;
+    max-width: 960px;
+}
+
+.icon {
+    display: inline-block;
+    font-size: 0.75em;
+}
+
+#book {
+    animation: book 20s infinite;
+}
+
+@keyframes book {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+#glass {
+    animation: glass 20s infinite ease-in-out;
+}
+
+@keyframes glass {
+    50% { transform: translateX(-9.2em); }
+}
+
+form {
+    display: flex;
+}
+
+#subjects, #button {
+    flex: 1;
+}
+
+#question {
+    flex: 3;
+}
