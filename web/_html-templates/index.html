@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!--Nothing here, wee!-->
+        <script defer src="js/index.js"></script>
     </head>
     <body>
         <h1>Paper Finder v3</h1>
@@ -12,8 +12,8 @@
                 <option value="pmath">Pure Maths</option>
                 <option value="bio">Biology</option>
             </select>
-            <input type="text" name="question" placeholder="Enter your question">
-            <input type="submit">
+            <input type="text" name="question" id="question" placeholder="Enter your question">
+            <input type="button" onclick="search()" value = "Find my answer">
         </form>
     </body>
 </html>

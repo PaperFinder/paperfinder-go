@@ -25,8 +25,13 @@ func main() {
 		fName := strings.ReplaceAll(info.Name(), ".pdf", "")
 		newName := dir + "/" + fName + ".filtered"
 
-		data, err := exec.Command("python", "pdftotext.py", path).Output()
+		cmd := exec.Command("python", "pdftotext.py", path)
 
+		cmd.Start()
+		cmd.Wait()
+
+		data, _ := ioutil.ReadFile(path + ".temp")
+		os.Remove(path + ".temp")
 		strdata := string(data)
 
 		fullstopReg := regexp.MustCompile(`\.{2,}`)

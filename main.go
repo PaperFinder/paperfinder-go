@@ -1,8 +1,15 @@
 package main
 
 import (
-	"github.com/kataras/iris/v12"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 
+	"golang.org/x/text/language"
+	"golang.org/x/text/search"
+
+	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
 )
@@ -13,31 +20,62 @@ func main() {
 	finder.Use(recover.New())
 	finder.Use(logger.New())
 
+	finder.HandleDir("/js", "./web/js")
+	finder.HandleDir("/css", "./web/css")
+
 	finder.Handle("GET", "/", func(context iris.Context) {
-		context.ServeFile("./_html-templates/index.html", false)
+		context.ServeFile("./web/_html-templates/index.html", false)
 	})
 
 	finder.Handle("GET", "/finder", func(context iris.Context) {
-		if !context.URLParamExists("subject") ||
-			!context.URLParamExists("question") ||
-			context.URLParam("question") == "" {
+		if !context.URLParamExists("s") ||
+			!context.URLParamExists("q") ||
+			context.URLParam("q") == "" ||
+			context.URLParam("s") == "" {
 
 			context.Redirect("/", iris.StatusSeeOther)
 		}
 
-		subject := context.URLParam("subject")
-		question := context.URLParam("question")
-		switch subject {
-		case "ph":
-			context.WriteString("Physics: ")
-		case "bio":
-			context.WriteString("Biology: ")
-		case "chem":
-			context.WriteString("Chemistry: ")
-		case "pmath":
-			context.WriteString("Pure Maths: ")
+		subject := context.URLParam("s")
+		question := context.URLParam("q")
+
+		dir := "_past-papers\\" + subject
+
+		matcher := search.New(language.English, search.Loose, search.IgnoreCase)
+
+		var results string
+
+		err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+			if info.IsDir() {
+				return nil
+			}
+			ext := strings.Split(info.Name(), ".")[1]
+			if ext == "pdf" {
+				return nil
+			}
+
+			data, _ := ioutil.ReadFile(path)
+
+			pat := matcher.Compile(data)
+			st, end := pat.IndexString(question)
+
+			if st == -1 || end == -1 {
+				return nil
+			}
+
+			results += string(data[st:end])
+
+			return nil
+		})
+		if err != nil {
+			panic(err)
 		}
-		context.WriteString(question)
+
+		if results == "" {
+			context.WriteString("nothing found")
+		}
+
+		context.WriteString(results)
 	})
 
 	finder.Run(iris.Addr(":80"), iris.WithoutServerError(iris.ErrServerClosed))
