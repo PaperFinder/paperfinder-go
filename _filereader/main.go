@@ -11,6 +11,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
@@ -19,17 +21,19 @@ func main() {
 		return
 	}
 	dir := os.Args[1]
-	fmt.Println(dir)
+
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if path == os.Args[1] {
 			return nil
 		}
-
+		if !(strings.HasSuffix(info.Name(), ".pdf")) {
+			return nil
+		}
 		fName := strings.ReplaceAll(info.Name(), ".pdf", "")
-		newName := dir + "/" + fName + ".filtered"
+		newName := dir + fName + ".filtered"
 
-		cmd := exec.Command("python", "pdftotext.py", path)
-
+		cmd := exec.Command("python3", "pdftotext.py", path)
+		fmt.Println(path)
 		cmd.Start()
 		cmd.Wait()
 
@@ -41,9 +45,9 @@ func main() {
 		markReg := regexp.MustCompile(`\[\d+\]`)
 		markRegRound := regexp.MustCompile(`\(\d+\)`)
 		doubleSpace := regexp.MustCompile(`\ {2,}`)
-		unitrgx := regexp.MustCompile(`/(Unit: [1-9]+)/i`)
-		subjectrgx := regexp.MustCompile(`/( .+ Advanced)/i`)
-		yearrgx := regexp.MustCompile(`©\d+`) //Pearson is up to date with copyright so why not use it
+		unitrgx := regexp.MustCompile(`(Unit? [1-9]+)`)
+		subjectrgx := regexp.MustCompile(`\w+\sAdvanced`) //regexp doesn't like spaces apparently
+		yearrgx := regexp.MustCompile(`©\d+`)
 
 		strdata = strings.ReplaceAll(strdata, ".", " ")
 		strdata = strings.ReplaceAll(strdata, "_", "")
@@ -51,14 +55,18 @@ func main() {
 		strdata = strings.ReplaceAll(strdata, "\r", " ")
 
 		//To improve in the future
-		fmt.Println(string(unitrgx.Find([]byte(strdata))))
-		fmt.Println(string(subjectrgx.Find([]byte(strdata))))
-		fmt.Println(string(yearrgx.Find([]byte(strdata))))
-		unit := strings.Split(string(unitrgx.Find([]byte(strdata))), " ")[1]
-		subject := strings.Split(string(subjectrgx.Find([]byte(strdata))), " ")[1]
-		year := strings.Split(string(yearrgx.Find([]byte(strdata))), "©")[1]
-		month := ""
-		switch fmonth := newName[:1]; fmonth {
+		fmt.Println("NEWNAME: " + newName)
+
+		fmt.Println("unitrgx: " + string(unitrgx.Find(data)))
+		fmt.Println("subjectrgx: " + string(subjectrgx.Find(data)))
+		fmt.Println("yearrgx: " + string(yearrgx.Find(data)))
+		unit := strings.Split(string(unitrgx.Find(data)), " ")[1]
+		subject := strings.Split(string(subjectrgx.Find(data)), " ")[0]
+		subject = strings.Split(subject, "\n")[0]
+		year := strings.Split(string(yearrgx.Find(data)), "©")[1] //TODO change this to unicode code
+		month := "NA"
+		fmt.Println("CHECK 1: " + subject)
+		switch fmonth := strings.Split(newName, "/")[4][:2]; fmonth {
 		case "Ja":
 			month = "January"
 		case "Ju":
@@ -69,6 +77,7 @@ func main() {
 			month = "NA"
 		}
 		papername := month + " " + year + " QP - Unit " + unit + " Edexcel " + subject + " A-level.pdf"
+		fmt.Println("CHECK 2")
 		//Lets assume everything is from pmt for now
 		qpl := "https://pmt.physicsandmathstutor.com/download/" + subject + "/A-level/Past-Papers/Edexcel-IAL/Unit-" + unit + "/" + papername
 		msl := strings.ReplaceAll(qpl, "QP", "MS")
@@ -76,9 +85,12 @@ func main() {
 		if err != nil {
 			uunit = 0
 		}
-		db, _ := sql.Open("sqlite3", "../db/sqlite-database.db")
-		insertpaper := `INSERT INTO papers(ID, filename, subject,unit,qpl,msl) VALUES (,?,?,?,?,?)`
-
+		db, err := sql.Open("sqlite3", "../db/papers.db")
+		if err != nil {
+			panic(err)
+		}
+		insertpaper := `INSERT INTO paperinfo(ID, filename, subject,unit,qpl,msl) VALUES (NULL,?,?,?,?,?)`
+		fmt.Println("CHECK 3")
 		statement, err := db.Prepare(insertpaper)
 		if err != nil {
 			log.Fatalln(err.Error())
@@ -94,8 +106,6 @@ func main() {
 		strdata = markReg.ReplaceAllLiteralString(strdata, "")
 		strdata = markRegRound.ReplaceAllLiteralString(strdata, "")
 		strdata = doubleSpace.ReplaceAllLiteralString(strdata, " ")
-
-		db.Close()
 
 		err = ioutil.WriteFile(newName, []byte(strdata), 0644)
 
