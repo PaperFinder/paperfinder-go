@@ -1,11 +1,19 @@
 package main
 
 import (
+	"bytes"
+	"io/ioutil"
 	"os"
 
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
+	"github.com/kataras/iris/v12/sessions"
+)
+
+var (
+	sescookie = "SESCOOKIE"
+	sess      = sessions.New(sessions.Config{Cookie: sescookie})
 )
 
 func main() {
@@ -21,7 +29,18 @@ func main() {
 			panic(err)
 		}
 		list, _ := file.Readdirnames(0)
+		session := sess.Start(context)
 		context.ViewData("subjects", list)
+		que := session.Get("que")
+		result := session.Get("result")
+		if que != nil {
+			context.ViewData("que", que)
+			if result != nil {
+				context.ViewData("result", result)
+			} else {
+				context.ViewData("result", "no papers")
+			}
+		}
 		context.View("index.html")
 	})
 
@@ -35,18 +54,42 @@ func main() {
 
 		subject := context.URLParam("subject")
 		question := context.URLParam("question")
-		switch subject {
-		case "ph":
-			context.WriteString("Physics: ")
-		case "bio":
-			context.WriteString("Biology: ")
-		case "chem":
-			context.WriteString("Chemistry: ")
-		case "pmath":
-			context.WriteString("Pure Maths: ")
+		file, err := os.Open("./_past-papers/" + subject)
+		if err != nil {
+			panic(err)
 		}
-		context.WriteString(question)
+		unlist, _ := file.Readdirnames(0)
+		//we turn the question in bytes for peak performance
+		bquestion := []byte(question)
+		for _, unit := range unlist {
+			file, _ := os.Open("./_past-papers/" + subject + "/" + unit)
+
+			qplist, _ := file.Readdirnames(0)
+
+			for _, qp := range qplist {
+				paper, err := os.Open("./_past-papers/" + subject + "/" + unit + "/" + qp)
+				if err != nil {
+					panic(err)
+				}
+				b, err := ioutil.ReadAll(paper)
+				if bytes.Contains(b, bquestion) {
+					sess.Start(context).set("result", paper.Name())
+					sess.Start(context).set("que", question)
+					context.Redirect("/")
+					return
+				}
+				if err != nil {
+					panic(err)
+				}
+			}
+
+		}
+		sess.Start(context).set("result", nil)
+		sess.Start(context).set("que", question)
+		context.Redirect("/", iris.StatusSeeOther)
+		return
+
 	})
 
-	finder.Run(iris.Addr(":80"), iris.WithoutServerError(iris.ErrServerClosed))
+	finder.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
 }
