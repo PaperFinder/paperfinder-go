@@ -62,9 +62,12 @@ func main() {
 
 			data, _ := ioutil.ReadFile(path)
 
+			data = []byte(strings.ToLower(string(data)))
+
+			question = strings.ToLower(question)
+
 			pat := matcher.Compile(data)
 			st, end := pat.IndexString(question)
-
 			if st == -1 || end == -1 {
 				return nil
 			}
@@ -76,13 +79,10 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-
 		if results == "" {
 			context.WriteString("nothing found")
 		}
-
 		context.WriteString(results)
 	})
-
 	finder.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
 }
