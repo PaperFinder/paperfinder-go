@@ -12,6 +12,12 @@ import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
+	"github.com/kataras/iris/v12/sessions"
+)
+
+var (
+	sescookie = "SESCOOKIE"
+	sess      = sessions.New(sessions.Config{Cookie: sescookie})
 )
 
 func main() {
@@ -78,5 +84,5 @@ func main() {
 		context.WriteString(results)
 	})
 
-	finder.Run(iris.Addr(":80"), iris.WithoutServerError(iris.ErrServerClosed))
+	finder.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
 }
