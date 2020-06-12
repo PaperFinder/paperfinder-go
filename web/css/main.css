@@ -35,12 +35,23 @@ h1 {
     100% { opacity: 1; }
 }
 
+#book2 {
+    animation: book2 8s infinite;
+}
+
+@keyframes book2 {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
 #glass {
     animation: glass 8s infinite ease-in-out;
+    transform: translateX(-100%);
 }
 
 @keyframes glass {
-    50% { transform: translateX(-9.2em); }
+    50% { transform: translateX(-10.6em); }
 }
 
 form {
