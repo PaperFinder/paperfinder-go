@@ -26,7 +26,7 @@ h1 {
 }
 
 #book {
-    animation: book 20s infinite;
+    animation: book 8s infinite;
 }
 
 @keyframes book {
@@ -36,7 +36,7 @@ h1 {
 }
 
 #glass {
-    animation: glass 20s infinite ease-in-out;
+    animation: glass 8s infinite ease-in-out;
 }
 
 @keyframes glass {
