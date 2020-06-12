@@ -7,6 +7,7 @@
 body {
     background-color: whitesmoke;
     padding: 1vw;
+    overflow: hidden;
 }
 
 h1 {
@@ -23,6 +24,7 @@ footer {
 .wrapper {
     display: block;
     margin: 0 auto;
+    margin-top: 30vh;
     max-width: 960px;
 }
 
@@ -62,6 +64,10 @@ footer {
 
 form {
     display: flex;
+}
+
+select, input {
+    margin: 0 4px;
 }
 
 #subjects, #button {
