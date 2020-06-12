@@ -2,6 +2,13 @@
 
 You know what it is
 
+## Dependencies
+ - python3
+    - tika
+ - java
+ - go
+ - will to live
+ 
 ## Building
 
 `go build`
