@@ -1,72 +1,170 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
+	"time"
 
+	"github.com/gocolly/colly"
+	_ "github.com/gocolly/colly/v2"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Not enough args")
+	if len(os.Args) < 3 {
+		fmt.Println("Not enough args. Usage: main.go crawl|manual path|link")
 		return
 	}
-	dir := os.Args[1]
+	command := os.Args[1]
+	if command == "crawl" {
+		c := colly.NewCollector(
+			// Visit only domains: hackerspaces.org, wiki.hackerspaces.org
+			colly.AllowedDomains("www.physicsandmathstutor.com"),
+		)
+		c.Limit(&colly.LimitRule{
+			DomainGlob:  "*www.*",
+			RandomDelay: 10 * time.Second,
+		})
+		c.OnHTML("a[href]", func(e *colly.HTMLElement) {
+			link := e.Attr("href")
+			fmt.Printf("Link found: %q -> %s\n", e.Text, link)
+			if strings.Contains(link, ".pdf") && strings.Contains(link, "QP") {
+				fmt.Printf("Link found: %q -> %s\n", e.Text, link)
+				tname := strings.Split(link, "/download/")[1]
+				fpath := strings.ReplaceAll(tname, "/Past-Papers/", "/")
+				fpath = strings.ReplaceAll(fpath, " ", "-")
+				subject := strings.Split(tname, "/")[0]
+				unit := strings.Split(tname, "/")[4]
+				fname := fpath[strings.LastIndex(fpath, "/"):]
 
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if path == os.Args[1] {
+				pathdir := "../_past-papers/" + fpath[:strings.LastIndex(fpath, "/")+1]
+				fmt.Println("PATHDIR: " + pathdir)
+				fpath = "../_past-papers/" + fpath
+				err := os.MkdirAll(pathdir, 0700)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println(pathdir)
+				out, err := os.Create(fpath)
+				if err != nil {
+					panic(err)
+				}
+				defer out.Close()
+				resp, err := http.Get(link)
+				if err != nil {
+					panic(err)
+				}
+				defer resp.Body.Close()
+				_, err = io.Copy(out, resp.Body)
+				if err != nil {
+					panic(err)
+				}
+				fmt.Printf("Downloaded: %q\n", fname)
+				install(fpath, "", pathdir, fname, link, subject, unit)
+				return
+			} else if strings.Contains(link, os.Args[2]) {
+
+				c.Visit(link)
+				return
+			}
+
+		})
+		c.OnRequest(func(r *colly.Request) {
+			fmt.Println("Visiting", r.URL.String())
+		})
+		c.Visit(os.Args[2])
+
+	} else {
+		dir := os.Args[2]
+		err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+			if path == os.Args[2] {
+				return nil
+			}
+			if !(strings.HasSuffix(info.Name(), ".pdf")) {
+				return nil
+			}
+			fName := strings.ReplaceAll(info.Name(), ".pdf", "")
+			install(path, fName, dir, "", "", "", "")
 			return nil
+		})
+		if err != nil {
+			panic(err)
 		}
-		if !(strings.HasSuffix(info.Name(), ".pdf")) {
-			return nil
-		}
-		fName := strings.ReplaceAll(info.Name(), ".pdf", "")
-		newName := dir + fName + ".filtered"
 
-		cmd := exec.Command("python3", "pdftotext.py", path)
-		fmt.Println(path)
-		cmd.Start()
-		cmd.Wait()
+	}
+}
 
-		data, _ := ioutil.ReadFile(path + ".temp")
-		os.Remove(path + ".temp")
-		strdata := string(data)
+// It converts the pdf to text file and removes the . spam
+// path: directory leading to the file,
+// fName: filtered filename
+// dir: folder directory where the file is (to be improved)
+// name: Used by the crawler to indicate a full filename, leave it blank when importing manually
+// durl: download url found by the crawler
+func install(path string, fName string, dir string, name string, durl string, dsubject string, dunit string) {
+	newName := ""
+	if !(fName == "") {
+		newName = dir + fName + ".filtered"
+	} else {
+		newName = dir + name + ".filtered"
+	}
+	fmt.Println("PATH: " + path)
+	cmd := exec.Command("python3", "pdftotext.py", path)
 
-		fullstopReg := regexp.MustCompile(`\.{2,}`)
-		markReg := regexp.MustCompile(`\[\d+\]`)
-		markRegRound := regexp.MustCompile(`\(\d+\)`)
-		doubleSpace := regexp.MustCompile(`\ {2,}`)
-		unitrgx := regexp.MustCompile(`(Unit? [1-9]+)`)
-		subjectrgx := regexp.MustCompile(`\w+\sAdvanced`) //regexp doesn't like spaces apparently
-		yearrgx := regexp.MustCompile(`©\d+`)
+	fmt.Println(path)
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		return
+	}
+	//cmd.Start()
+	//cmd.Wait()
 
-		strdata = strings.ReplaceAll(strdata, ".", " ")
-		strdata = strings.ReplaceAll(strdata, "_", "")
-		strdata = strings.ReplaceAll(strdata, "\n", " ")
-		strdata = strings.ReplaceAll(strdata, "\r", " ")
+	data, _ := ioutil.ReadFile(path + ".temp")
+	os.Remove(path + ".temp")
+	strdata := string(data)
 
-		//To improve in the future
+	fullstopReg := regexp.MustCompile(`\.{2,}`)
+	markReg := regexp.MustCompile(`\[\d+\]`)
+	markRegRound := regexp.MustCompile(`\(\d+\)`)
+	doubleSpace := regexp.MustCompile(`\ {2,}`)
+	unitrgx := regexp.MustCompile(`(Unit? [1-9]+)`)
+	subjectrgx := regexp.MustCompile(`\w+\sAdvanced`) //regexp doesn't like spaces apparently
+	yearrgx := regexp.MustCompile(`©\d+`)
+
+	strdata = strings.ReplaceAll(strdata, ".", " ")
+	strdata = strings.ReplaceAll(strdata, "_", "")
+	strdata = strings.ReplaceAll(strdata, "\n", " ")
+	strdata = strings.ReplaceAll(strdata, "\r", " ")
+	unit := ""
+	subject := ""
+	qpl := ""
+	msl := ""
+	if name == "" {
 		fmt.Println("NEWNAME: " + newName)
-
 		fmt.Println("unitrgx: " + string(unitrgx.Find(data)))
 		fmt.Println("subjectrgx: " + string(subjectrgx.Find(data)))
 		fmt.Println("yearrgx: " + string(yearrgx.Find(data)))
-		unit := strings.Split(string(unitrgx.Find(data)), " ")[1]
-		subject := strings.Split(string(subjectrgx.Find(data)), " ")[0]
+
+		unit = strings.Split(string(unitrgx.Find(data)), " ")[1]
+		subject = strings.Split(string(subjectrgx.Find(data)), " ")[0]
 		subject = strings.Split(subject, "\n")[0]
 		year := strings.Split(string(yearrgx.Find(data)), "©")[1] //TODO change this to unicode code
 		month := "NA"
-		fmt.Println("CHECK 1: " + subject)
-		switch fmonth := strings.Split(newName, "/")[4][:2]; fmonth {
+		switch fmonth := fName[:2]; fmonth {
 		case "Ja":
 			month = "January"
 		case "Ju":
@@ -77,41 +175,41 @@ func main() {
 			month = "NA"
 		}
 		papername := month + " " + year + " QP - Unit " + unit + " Edexcel " + subject + " A-level.pdf"
-		fmt.Println("CHECK 2")
 		//Lets assume everything is from pmt for now
-		qpl := "https://pmt.physicsandmathstutor.com/download/" + subject + "/A-level/Past-Papers/Edexcel-IAL/Unit-" + unit + "/" + papername
-		msl := strings.ReplaceAll(qpl, "QP", "MS")
-		uunit, err := strconv.Atoi(unit)
-		if err != nil {
-			uunit = 0
-		}
-		db, err := sql.Open("sqlite3", "../db/papers.db")
-		if err != nil {
-			panic(err)
-		}
-		insertpaper := `INSERT INTO paperinfo(ID, filename, subject,unit,qpl,msl) VALUES (NULL,?,?,?,?,?)`
-		fmt.Println("CHECK 3")
-		statement, err := db.Prepare(insertpaper)
-		if err != nil {
-			log.Fatalln(err.Error())
-		}
+		qpl = "https://pmt.physicsandmathstutor.com/download/" + subject + "/A-level/Past-Papers/Edexcel-IAL/Unit-" + unit + "/" + papername
+		msl = strings.ReplaceAll(qpl, "QP", "MS")
+	} else {
 
-		_, err = statement.Exec(newName, subject, uunit, qpl, msl)
+		qpl = durl
+		msl = strings.ReplaceAll(qpl, "QP", "MS")
+		subject = dsubject
+		unit = dunit
+	}
 
-		if err != nil {
-			log.Fatalln(err.Error())
-		}
-		db.Close()
-		strdata = fullstopReg.ReplaceAllLiteralString(strdata, "")
-		strdata = markReg.ReplaceAllLiteralString(strdata, "")
-		strdata = markRegRound.ReplaceAllLiteralString(strdata, "")
-		strdata = doubleSpace.ReplaceAllLiteralString(strdata, " ")
+	//To improve in the future
 
-		err = ioutil.WriteFile(newName, []byte(strdata), 0644)
-
-		return nil
-	})
+	db, err := sql.Open("sqlite3", "../db/papers.db")
 	if err != nil {
 		panic(err)
 	}
+	insertpaper := `INSERT INTO paperinfo(ID, filepath, subject,unit,qpl,msl) VALUES (NULL,?,?,?,?,?)`
+	statement, err := db.Prepare(insertpaper)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	_, err = statement.Exec(newName, subject, unit, qpl, msl)
+
+	if err != nil {
+		fmt.Println("A PAPER WAS ALREADY FOUND IN THE DB")
+	}
+	db.Close()
+	strdata = fullstopReg.ReplaceAllLiteralString(strdata, "")
+	strdata = markReg.ReplaceAllLiteralString(strdata, "")
+	strdata = markRegRound.ReplaceAllLiteralString(strdata, "")
+	strdata = doubleSpace.ReplaceAllLiteralString(strdata, " ")
+	fmt.Println("NEWNAME: " + newName)
+	err = ioutil.WriteFile(newName, []byte(strdata), 0644)
+
+	return
 }
