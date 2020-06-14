@@ -40,13 +40,22 @@ func main() {
 			fmt.Printf("Link found: %q -> %s\n", e.Text, link)
 			if strings.Contains(link, ".pdf") && strings.Contains(link, "QP") {
 				fmt.Printf("Link found: %q -> %s\n", e.Text, link)
-				tname := strings.Split(link, "/download/")[1]
-				fpath := strings.ReplaceAll(tname, "/Past-Papers/", "/")
-				fpath = strings.ReplaceAll(fpath, " ", "-")
-				subject := strings.Split(tname, "/")[0]
-				unit := strings.Split(tname, "/")[4]
-				fname := fpath[strings.LastIndex(fpath, "/"):]
 
+				//Here we are filtering out useless stuff
+				tempname := strings.Split(link, "/download/")[1]
+				fpath := strings.ReplaceAll(tempname, "/Past-Papers/", "/")
+				fname := fpath[strings.LastIndex(fpath, "/"):]
+				papername := fname[1:]
+				fpath = strings.ReplaceAll(fpath, " ", "-")
+				subject := strings.Split(tempname, "/")[0]
+				unit := strings.Split(tempname, "/")[4]
+
+				words := strings.Split(fname, " ")
+				if words[2] == "(IAL)" {
+					fname = words[0][1:3] + words[1] + words[3] + "IAL" + ".pdf"
+				} else {
+					fname = words[0][1:3] + words[1] + words[2] + ".pdf"
+				}
 				pathdir := "../_past-papers/" + fpath[:strings.LastIndex(fpath, "/")+1]
 				fmt.Println("PATHDIR: " + pathdir)
 				fpath = "../_past-papers/" + fpath
@@ -70,7 +79,8 @@ func main() {
 					panic(err)
 				}
 				fmt.Printf("Downloaded: %q\n", fname)
-				install(fpath, "", pathdir, fname, link, subject, unit)
+				install(fpath, papername, "", pathdir, fname, link, subject, unit)
+				fmt.Printf("Installed: %q\n", fname)
 				return
 			} else if strings.Contains(link, os.Args[2]) {
 
@@ -94,7 +104,7 @@ func main() {
 				return nil
 			}
 			fName := strings.ReplaceAll(info.Name(), ".pdf", "")
-			install(path, fName, dir, "", "", "", "")
+			install(path, "", fName, dir, "", "", "", "")
 			return nil
 		})
 		if err != nil {
@@ -106,16 +116,17 @@ func main() {
 
 // It converts the pdf to text file and removes the . spam
 // path: directory leading to the file,
+// fpapername: Full paper name
 // fName: filtered filename
 // dir: folder directory where the file is (to be improved)
 // name: Used by the crawler to indicate a full filename, leave it blank when importing manually
 // durl: download url found by the crawler
-func install(path string, fName string, dir string, name string, durl string, dsubject string, dunit string) {
+func install(path string, fpapername, fName string, dir string, name string, durl string, dsubject string, dunit string) {
 	newName := ""
 	if !(fName == "") {
-		newName = dir + fName + ".filtered"
+		newName = dir + strings.ReplaceAll(fName, ".pdf", "") + ".filtered"
 	} else {
-		newName = dir + name + ".filtered"
+		newName = dir + strings.ReplaceAll(name, ".pdf", "") + ".filtered"
 	}
 	fmt.Println("PATH: " + path)
 	cmd := exec.Command("python3", "pdftotext.py", path)
@@ -192,13 +203,13 @@ func install(path string, fName string, dir string, name string, durl string, ds
 	if err != nil {
 		panic(err)
 	}
-	insertpaper := `INSERT INTO paperinfo(ID, filepath, subject,unit,qpl,msl) VALUES (NULL,?,?,?,?,?)`
+	insertpaper := `INSERT INTO paperinfo(ID, filepath, papername, subject,unit,qpl,msl) VALUES (NULL,?,?,?,?,?,?)`
 	statement, err := db.Prepare(insertpaper)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	_, err = statement.Exec(newName, subject, unit, qpl, msl)
+	_, err = statement.Exec(newName, fpapername, subject, unit, qpl, msl)
 
 	if err != nil {
 		fmt.Println("A PAPER WAS ALREADY FOUND IN THE DB")
