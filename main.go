@@ -1,23 +1,19 @@
 package main
 
 import (
+	"bytes"
+	"database/sql"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
-
-	"golang.org/x/text/language"
-	"golang.org/x/text/search"
 
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
-	"github.com/kataras/iris/v12/sessions"
-)
-
-var (
-	sescookie = "SESCOOKIE"
-	sess      = sessions.New(sessions.Config{Cookie: sescookie})
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
@@ -45,44 +41,70 @@ func main() {
 		subject := context.URLParam("s")
 		question := context.URLParam("q")
 
-		dir := "_past-papers\\" + subject
+		dir := path.Join("_past-papers", subject)
 
-		matcher := search.New(language.English, search.Loose, search.IgnoreCase)
+		//matcher := search.New(language.English, search.Loose, search.IgnoreCase)
+		results := "not found"
 
-		var results string
-
+		bquestion := []byte(strings.ToLower(question))
+		var papername string
+		var qpl string
+		var msl string
 		err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 			if info.IsDir() {
 				return nil
 			}
-			ext := strings.Split(info.Name(), ".")[1]
-			if ext == "pdf" {
+			ext := strings.Split(info.Name(), ".")
+			extt := ext[len(ext)-1]
+			if extt == "pdf" {
 				return nil
 			}
 
-			data, _ := ioutil.ReadFile(path)
+			bdata, _ := ioutil.ReadFile(path)
 
-			data = []byte(strings.ToLower(string(data)))
+			bdata = []byte(strings.ToLower(string(bdata)))
 
-			question = strings.ToLower(question)
+			if bytes.Contains(bdata, bquestion) {
+				results = path
+				/* This is for another time since it doesn't work
+				pat := matcher.Compile(bdata)
+				st, end := pat.Index(bquestion)
+				if st == -1 || end == -1 {
+					return nil
+				}
+				data := string(bdata)
+				results += string(data[st:end])
+				*/
+				db, err := sql.Open("sqlite3", "./db/papers.db")
+				if err != nil {
+					panic(err)
+				}
+				fmt.Println(path)
+				row := db.QueryRow(`SELECT papername,qpl,msl FROM paperinfo WHERE filepath = ?`, "../"+path)
 
-			pat := matcher.Compile(data)
-			st, end := pat.IndexString(question)
-			if st == -1 || end == -1 {
-				return nil
+				if err := row.Scan(&papername, &qpl, &msl); err != nil {
+					panic(err)
+
+				}
 			}
-
-			results += string(data[st:end])
 
 			return nil
 		})
 		if err != nil {
 			panic(err)
 		}
+
 		if results == "" {
-			context.WriteString("nothing found")
+			context.JSON(map[string]string{"Query": question, "Found": "False"})
 		}
-		context.WriteString(results)
+		context.JSON(map[string]string{"Query": question, "Found": "True", "Paper": strings.ReplaceAll(papername, ".pdf", ""), "QPL": qpl, "MSL": msl})
 	})
+	finder.Handle("GET", "/subjects", func(context iris.Context) {
+		file, _ := os.Open("./_past-papers")
+
+		list, _ := file.Readdirnames(0)
+		context.JSON(map[string]string{"Subjects": strings.Join(list, ",")})
+	})
+
 	finder.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
 }
