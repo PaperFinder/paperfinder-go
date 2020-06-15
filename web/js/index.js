@@ -13,13 +13,19 @@ function search() {
         }
     };
     xhr.open('GET', '/finder?q=' + question + '&s=' + subject,true);
-    xhr.onload  = function() {
-        var jsonResponse = req.response;
-        
-     };
+    var jsonResponse =  JSON.parse(xhr.responseText);
+    document.getElementById("query").innerHTML = jsonResponse.Query
+    if (jsonResponse.Found == 'True') {
+        document.getElementById("Paper").innerHTML = jsonResponse.Paper
+        document.getElementById("qpl").innerHTML = jsonResponse.QPL
+        document.getElementById("qpl").href = jsonResponse.QPL
+        document.getElementById("msl").innerHTML = jsonResponse.MSL
+    } else {
+        document.getElementById("Paper").innerHTML = 'in no papers'
+    }
     xhr.send()
+ };
 
-}
 function onload() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', '/subjects',true);

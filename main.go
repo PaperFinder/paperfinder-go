@@ -83,7 +83,9 @@ func main() {
 				row := db.QueryRow(`SELECT papername,qpl,msl FROM paperinfo WHERE filepath = ?`, "../"+path)
 
 				if err := row.Scan(&papername, &qpl, &msl); err != nil {
-					panic(err)
+					papername = "NA"
+					qpl = "NA"
+					msl = "NA"
 
 				}
 			}

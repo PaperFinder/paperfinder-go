@@ -71,12 +71,19 @@ func main() {
 				defer out.Close()
 				resp, err := http.Get(link)
 				if err != nil {
-					panic(err)
+					time.Sleep(5 * time.Second)
+					resp, err = http.Get(link)
+					if err != nil {
+						fmt.Printf("CANT FIND: %q\n", fname)
+					}
 				}
 				defer resp.Body.Close()
 				_, err = io.Copy(out, resp.Body)
 				if err != nil {
-					panic(err)
+					_, err = io.Copy(out, resp.Body)
+					if err != nil {
+						fmt.Printf("CANT DOWNLOAD: %q\n", fname)
+					}
 				}
 				fmt.Printf("Downloaded: %q\n", fname)
 				install(fpath, papername, "", pathdir, fname, link, subject, unit)
