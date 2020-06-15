@@ -8,16 +8,12 @@
     <script defer src="../js/index.js"></script>
 </head>
 
-<body>
+<body onload="onload();">
     <div class="wrapper">
         <h1><span class="icon" id="book">📖</span>Paper Finder<span class="icon" id="glass">🔍</span></h1>
 
         <form action="/finder" method="GET">
             <select name="subject" id="subjects">
-                <option value="phys">Physics</option>
-                <option value="bio">Biology</option>
-                <option value="chem">Chemistry</option>
-                <option value="pmath">Pure Maths</option>
             </select>
 
             <input type="text" name="question" id="question" placeholder="Enter your question">
