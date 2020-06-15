@@ -42,4 +42,4 @@ OR
 
 ## Info
 
-Server runs on port 80 by default, will add a config later
+Server runs on port 8080 by default, will add a config later
