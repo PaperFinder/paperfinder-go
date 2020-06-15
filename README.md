@@ -29,8 +29,8 @@ You know what it is
  
 ## FILE READER.go
   usage:
-    `go run _filereader/main.go crawl <link>` It will crawl the specified link for past papers. The more general the more past papers.
-    **Example:** `go run _filereader/main.go crawl https://www.physicsandmathstutor.com/past-papers/a-level-physics/`
+    `go run _filereader/main.go crawl <link>` It will crawl the specified link for past papers. The more general the more past papers.  
+    **Example:** `go run _filereader/main.go crawl https://www.physicsandmathstutor.com/past-papers/a-level-physics/`  
     
 ## Building
 
