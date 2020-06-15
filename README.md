@@ -11,8 +11,8 @@ You know what it is
  
  ## API GUIDE 
 - /finder
-  Queries a question and returns a result, if one is found.
-  **Usage:** /finder?q=<question>&s=<subject>
+  Queries a question and returns a result, if one is found.  
+  **Usage:** /finder?q=<question>&s=<subject>  
   **Rensponse:** It returns a json file with the following parameters:
    - Query: It is the question submitted
    - Found: Whether a match was found
@@ -24,8 +24,8 @@ You know what it is
    - QN: Question Number
    - Context: Context of the question
 - /subjects
-  **Usage:** /subjects
-  **Response:** A list of subjects seperated by ','
+  **Usage:** /subjects  
+  **Response:** A list of subjects seperated by ','  
  
 ## FILE READER.go
   usage:
