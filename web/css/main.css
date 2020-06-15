@@ -7,6 +7,7 @@
 body {
     background-color: whitesmoke;
     padding: 1vw;
+    overflow: hidden;
 }
 
 h1 {
@@ -14,9 +15,16 @@ h1 {
     text-align: center;
 }
 
+footer {
+    margin-top: 4em;
+    font-size: 1em;
+    text-align: center;
+}
+
 .wrapper {
     display: block;
     margin: 0 auto;
+    margin-top: 30vh;
     max-width: 960px;
 }
 
@@ -26,7 +34,7 @@ h1 {
 }
 
 #book {
-    animation: book 20s infinite;
+    animation: book 8s infinite;
 }
 
 @keyframes book {
@@ -35,16 +43,31 @@ h1 {
     100% { opacity: 1; }
 }
 
+#book2 {
+    animation: book2 8s infinite;
+}
+
+@keyframes book2 {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
 #glass {
-    animation: glass 20s infinite ease-in-out;
+    animation: glass 8s infinite ease-in-out;
+    transform: translateX(-100%);
 }
 
 @keyframes glass {
-    50% { transform: translateX(-9.2em); }
+    50% { transform: translateX(-10.6em); }
 }
 
 form {
     display: flex;
+}
+
+select, input {
+    margin: 0 4px;
 }
 
 #subjects, #button {
