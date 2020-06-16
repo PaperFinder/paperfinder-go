@@ -12,8 +12,7 @@
     <div class="wrapper">
         <h1><span class="icon" id="book">📖</span>Paper Finder<span class="icon" id="book2">📖</span><span class="icon" id="glass">🔍</span></h1>
         <form action="/finder" method="GET">
-            <select name="subject" id="subjects">
-            </select>
+            <select name="subject" id="subjects"></select>
             <input type="text" name="question" id="question" placeholder="Enter your question">
             <input type="button" id="button" onclick="search()" value="Find my answer">
 
@@ -21,8 +20,8 @@
     </div>
     <!-- Pls make this pretty ty-->
     <div>
-        <p id="query"></p><p> was found in </p><p id="Paper"></p>
-        <p id = "qpl"></p><p id="msl"></p>
+        <p id="result"></p>
+        <a id = "qpl">QPL</a><br><a id="msl">MSL</a>
     </div>
     <footer>&copy; <a href="https://github.com/cents02">Cents02</a>, <a href="https://github.com/frogstair">frogstair</a>, <a href="https://github.com/danielpancake">DanielPancake</a> 2020</footer>
 </body>

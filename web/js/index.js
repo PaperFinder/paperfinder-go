@@ -12,21 +12,30 @@ function search() {
             console.log(xhr.responseText)
         }
     };
-    xhr.open('GET', '/finder?q=' + question + '&s=' + subject,true);
-    var jsonResponse =  JSON.parse(xhr.responseText);
-    document.getElementById("query").innerHTML = jsonResponse.Query
-    if (jsonResponse.Found == 'True') {
-        document.getElementById("Paper").innerHTML = jsonResponse.Paper
-        document.getElementById("qpl").innerHTML = jsonResponse.QPL
-        document.getElementById("qpl").href = jsonResponse.QPL
-        document.getElementById("msl").innerHTML = jsonResponse.MSL
-    } else {
-        document.getElementById("Paper").innerHTML = 'in no papers'
-    }
+    xhr.open('GET', '/finder?q=' + question + '&s=' + subject,false);
     xhr.send()
+        var jsonResponse =  JSON.parse(xhr.responseText);
+        document.getElementById("result").innerHTML = jsonResponse.Query
+        if (jsonResponse.Found == 'True') {
+            
+            document.getElementById("result").innerText = "\"" +jsonResponse.Query + "\" was found in "+ jsonResponse.Paper
+            document.getElementById("qpl").href = jsonResponse.QPL
+            document.getElementById("msl").href = jsonResponse.MSL
+            document.getElementById("result").style.display = '';
+            document.getElementById("qpl").style.display = '';
+            document.getElementById("msl").style.display = '';
+        } else {
+            document.getElementById("result").innerHTML = jsonResponse.Query + " was found "+"in no papers"
+        }
+    
+
+    
  };
 
 function onload() {
+    document.getElementById("result").style.display = 'block';
+    document.getElementById("qpl").style.display = 'none';
+    document.getElementById("msl").style.display = 'none';
     var xhr = new XMLHttpRequest();
     xhr.open('GET', '/subjects',true);
     

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -30,6 +31,7 @@ func main() {
 	})
 
 	finder.Handle("GET", "/finder", func(context iris.Context) {
+		log.Println("GET Q:" + context.URLParam("q") + " S: " + context.URLParam("s"))
 		if !context.URLParamExists("s") ||
 			!context.URLParamExists("q") ||
 			context.URLParam("q") == "" ||
