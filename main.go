@@ -48,7 +48,7 @@ func main() {
 		//matcher := search.New(language.English, search.Loose, search.IgnoreCase)
 		results := "not found"
 
-		bquestion := []byte(strings.ToLower(question))
+		bquestion := []byte(strings.ToLower(string([]rune(question))))
 		var papername string
 		var qpl string
 		var msl string
@@ -82,9 +82,10 @@ func main() {
 					panic(err)
 				}
 				fmt.Println(path)
-				row := db.QueryRow(`SELECT papername,qpl,msl FROM paperinfo WHERE filepath = ?`, "../"+path)
+				row := db.QueryRow(`SELECT papername,qpl,msl FROM paperinfo WHERE filepath = ?`, "../"+strings.ReplaceAll(path, "\\", "/"))
 
 				if err := row.Scan(&papername, &qpl, &msl); err != nil {
+
 					papername = "NA"
 					qpl = "NA"
 					msl = "NA"
@@ -98,13 +99,14 @@ func main() {
 			panic(err)
 		}
 
-		if results == "" {
-			context.JSON(map[string]string{"Query": question, "Found": "False"})
+		if results == "not found" {
+			context.JSON(map[string]string{"Query": question[:60], "Found": "False"})
+		} else {
+			context.JSON(map[string]string{"Query": question[:60], "Found": "True", "Paper": strings.ReplaceAll(papername, ".pdf", ""), "QPL": qpl, "MSL": msl})
 		}
-		context.JSON(map[string]string{"Query": question, "Found": "True", "Paper": strings.ReplaceAll(papername, ".pdf", ""), "QPL": qpl, "MSL": msl})
 	})
 	finder.Handle("GET", "/subjects", func(context iris.Context) {
-		file, _ := os.Open("./_past-papers")
+		file, _ := os.Open("_past-papers")
 
 		list, _ := file.Readdirnames(0)
 		context.JSON(map[string]string{"Subjects": strings.Join(list, ",")})

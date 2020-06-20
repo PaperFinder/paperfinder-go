@@ -27,7 +27,7 @@ function search() {
         } else {
             document.getElementById("result").innerHTML = jsonResponse.Query + " was found "+"in no papers"
         }
-    
+    return false;
 
     
  };
