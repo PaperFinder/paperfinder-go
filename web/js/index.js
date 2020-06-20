@@ -25,7 +25,7 @@ function search() {
             document.getElementById("qpl").style.display = '';
             document.getElementById("msl").style.display = '';
         } else {
-            document.getElementById("result").innerHTML = jsonResponse.Query + " was found "+"in no papers"
+            document.getElementById("result").innerHTML = "\"" +jsonResponse.Query + "\"was found "+"in no papers"
         }
     return false;
 

@@ -98,7 +98,9 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-
+		if len(question) > 57 {
+			question = question[:57] + "..."
+		}
 		if results == "not found" {
 			context.JSON(map[string]string{"Query": question[:60], "Found": "False"})
 		} else {
