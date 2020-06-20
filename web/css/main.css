@@ -4,33 +4,33 @@
     font-family: Raleway, sans-serif;
 }
 
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
 body {
-    background-color: whitesmoke;
-    padding: 1vw;
-    overflow: hidden;
-}
-
-h1 {
-    font-size: 4em;
-    text-align: center;
-}
-
-footer {
-    margin-top: 4em;
-    font-size: 1em;
-    text-align: center;
+    background: url(../assets/image_background.png);
+    padding: 0 1vw;
 }
 
 .wrapper {
-    display: block;
-    margin: 0 auto;
-    margin-top: 30vh;
-    max-width: 960px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center; 
+    min-height: 100%;
+}
+
+h1 {
+    font-size: 64px;
+    margin: 0;
+    padding: 0;
+    text-align: center;
 }
 
 .icon {
     display: inline-block;
-    font-size: 0.75em;
 }
 
 #book {
@@ -56,24 +56,76 @@ footer {
 #glass {
     animation: glass 8s infinite ease-in-out;
     transform: translateX(-100%);
+    font-size: 48px;
+    width: 0;
 }
 
 @keyframes glass {
-    50% { transform: translateX(-10.6em); }
+    0% { transform: translateX(-72px); }
+    50% { transform: translateX(-542px); }
+    100% { transform: translateX(-72px); }
+}
+
+footer {
+    font-size: 18px;
+    margin-top: -32px;
+    text-align: center;
 }
 
 form {
+    box-shadow: hsl(200, 70%, 70%) 0px 5px 0px;
     display: flex;
+    margin-top: 8px;
+    max-width: 960px;
 }
 
-select, input {
-    margin: 0 4px;
+#subjects, #button, #question, #result {
+    border: none;
+    font-size: 20px;
+    padding: 8px 16px;
 }
 
-#subjects, #button {
-    flex: 1;
+#button {
+    background-color: hsl(200, 70%, 70%);
+    border-radius: 0 15px 0 0;
+    color: white;
+    font-weight: bold;
+    text-shadow: hsl(200, 70%, 50%) 2px 1px 0;
 }
 
 #question {
-    flex: 3;
+    min-width: 300px;
+}
+
+button:hover, #button:hover {
+    cursor: pointer;
+}
+
+button {
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 16px 32px;
+    text-align: center;
+    text-decoration: none;
+    transition: 0.15s;
+}
+
+#qpl button {
+    background-color: hsl(100, 10%, 70%);
+    text-shadow: hsl(100, 70%, 50%) 2px 1px 0;
+}
+
+#qpl button:hover {
+    background-color: hsl(100, 70%, 70%);
+}
+
+#msl button {
+    background-color: hsl(0, 10%, 70%);
+    text-shadow: hsl(0, 70%, 50%) 2px 1px 0;
+}
+
+#msl button:hover {
+    background-color: hsl(0, 70%, 70%);
 }

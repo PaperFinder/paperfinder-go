@@ -4,24 +4,28 @@
 <head>
     <title>Paper Finder</title>
     <link rel="stylesheet" href="../css/main.css">
-
+    
     <script defer src="../js/index.js"></script>
 </head>
 
-<body onload="onload();">
+<body onload="">
     <div class="wrapper">
         <h1><span class="icon" id="book">📖</span>Paper Finder<span class="icon" id="book2">📖</span><span class="icon" id="glass">🔍</span></h1>
+        
         <form action="/finder" method="GET">
             <select name="subject" id="subjects"></select>
             <input type="text" name="question" id="question" placeholder="Enter your question">
             <input type="button" id="button" onclick="search()" value="Find my answer">
 
         </form>
-    </div>
-    <!-- Pls make this pretty ty-->
-    <div>
+
         <p id="result"></p>
-        <a id = "qpl">QPL</a><br><a id="msl">MSL</a>
+
+        <div>
+            <a id="qpl"><button>QPL</button></a>
+            <a id="msl"><button>MSL</button></a>
+        </div>
     </div>
-    <footer>&copy; <a href="https://github.com/cents02">Cents02</a>, <a href="https://github.com/frogstair">frogstair</a>, <a href="https://github.com/danielpancake">DanielPancake</a> 2020</footer>
+
+    <footer>&copy; <a href="https://github.com/cents02">cents02</a>, <a href="https://github.com/frogstair">frogstair</a>, <a href="https://github.com/danielpancake">danielpancake</a> 2020</footer>
 </body>
