@@ -78,6 +78,7 @@ func main() {
 				results += string(data[st:end])
 				*/
 				db, err := sql.Open("sqlite3", "./db/papers.db")
+				defer db.Close()
 				if err != nil {
 					panic(err)
 				}

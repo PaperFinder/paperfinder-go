@@ -1,4 +1,5 @@
 function search() {
+    onload();
     var s = document.getElementById("subjects");
 
     var subject = s.options[s.selectedIndex].value;
@@ -13,6 +14,7 @@ function search() {
         }
     };
     xhr.open('GET', '/finder?q=' + question + '&s=' + subject,false);
+    
     xhr.send()
         var jsonResponse =  JSON.parse(xhr.responseText);
         document.getElementById("result").innerHTML = jsonResponse.Query
