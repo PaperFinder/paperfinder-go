@@ -102,9 +102,9 @@ func main() {
 			question = question[:57] + "..."
 		}
 		if results == "not found" {
-			context.JSON(map[string]string{"Query": question[:60], "Found": "False"})
+			context.JSON(map[string]string{"Query": question, "Found": "False"})
 		} else {
-			context.JSON(map[string]string{"Query": question[:60], "Found": "True", "Paper": strings.ReplaceAll(papername, ".pdf", ""), "QPL": qpl, "MSL": msl})
+			context.JSON(map[string]string{"Query": question, "Found": "True", "Paper": strings.ReplaceAll(papername, ".pdf", ""), "QPL": qpl, "MSL": msl})
 		}
 	})
 	finder.Handle("GET", "/subjects", func(context iris.Context) {
