@@ -78,13 +78,12 @@ func main() {
 				results += string(data[st:end])
 				*/
 				db, err := sql.Open("sqlite3", "./db/papers.db")
-				defer db.Close()
 				if err != nil {
 					panic(err)
 				}
 				fmt.Println(path)
 				row := db.QueryRow(`SELECT papername,qpl,msl FROM paperinfo WHERE filepath = ?`, "../"+strings.ReplaceAll(path, "\\", "/"))
-
+				db.Close()
 				if err := row.Scan(&papername, &qpl, &msl); err != nil {
 
 					papername = "NA"
