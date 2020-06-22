@@ -212,6 +212,7 @@ func install(path string, fpapername, fName string, dir string, name string, dur
 	}
 	insertpaper := `INSERT INTO paperinfo(ID, filepath, papername, subject,unit,qpl,msl) VALUES (NULL,?,?,?,?,?,?)`
 	statement, err := db.Prepare(insertpaper)
+
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -221,6 +222,7 @@ func install(path string, fpapername, fName string, dir string, name string, dur
 	if err != nil {
 		fmt.Println("A PAPER WAS ALREADY FOUND IN THE DB")
 	}
+	db.Commit()
 	db.Close()
 	strdata = fullstopReg.ReplaceAllLiteralString(strdata, "")
 	strdata = markReg.ReplaceAllLiteralString(strdata, "")
