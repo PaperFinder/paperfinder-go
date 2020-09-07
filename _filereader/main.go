@@ -214,13 +214,13 @@ func install(path string, fpapername, fName string, dir string, name string, dur
 	statement, err := db.Prepare(insertpaper)
 
 	if err != nil {
-		panic(err.Error())
+		log.Fatalln(err.Error())
 	}
 
 	_, err = statement.Exec(newName, fpapername, subject, unit, qpl, msl)
 
 	if err != nil {
-		panic(err)
+		fmt.Println("A PAPER WAS ALREADY FOUND IN THE DB.")
 	}
 	db.Close()
 	strdata = fullstopReg.ReplaceAllLiteralString(strdata, "")
