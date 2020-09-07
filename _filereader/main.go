@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -37,6 +36,7 @@ func main() {
 		})
 		c.OnHTML("a[href]", func(e *colly.HTMLElement) {
 			link := e.Attr("href")
+
 			fmt.Printf("Link found: %q -> %s\n", e.Text, link)
 			if strings.Contains(link, ".pdf") && strings.Contains(link, "QP") {
 				fmt.Printf("Link found: %q -> %s\n", e.Text, link)
@@ -214,15 +214,14 @@ func install(path string, fpapername, fName string, dir string, name string, dur
 	statement, err := db.Prepare(insertpaper)
 
 	if err != nil {
-		log.Fatalln(err.Error())
+		panic(err.Error())
 	}
 
 	_, err = statement.Exec(newName, fpapername, subject, unit, qpl, msl)
 
 	if err != nil {
-		fmt.Println("A PAPER WAS ALREADY FOUND IN THE DB")
+		panic(err)
 	}
-	db.Commit()
 	db.Close()
 	strdata = fullstopReg.ReplaceAllLiteralString(strdata, "")
 	strdata = markReg.ReplaceAllLiteralString(strdata, "")
