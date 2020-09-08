@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -27,7 +28,6 @@ func main() {
 	command := os.Args[1]
 	if command == "crawl" {
 		c := colly.NewCollector(
-			// Visit only domains: hackerspaces.org, wiki.hackerspaces.org
 			colly.AllowedDomains("www.physicsandmathstutor.com"),
 		)
 		c.Limit(&colly.LimitRule{
