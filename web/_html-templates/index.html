@@ -13,7 +13,7 @@
     <div class="wrapper">
         <h1><span class="icon" id="book">📖</span>Paper Finder<span class="icon" id="book2">📖</span><span class="icon" id="glass">🔍</span></h1>
         
-        <form action="/finder" method="GET">
+        <form onsubmit="search();return false;">
             <select name="subject" id="subjects"></select>
             <input type="text" name="question" id="question" placeholder="Enter your question">
             <input type="button" id="button" onclick="search()" value="Find my answer">

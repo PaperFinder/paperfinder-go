@@ -26,18 +26,19 @@ function search() {
             document.getElementById("result").style.display = '';
             document.getElementById("qpl").style.display = '';
             document.getElementById("msl").style.display = '';
-        } else {
-            document.getElementById("result").innerHTML = "\"" +jsonResponse.Query + "\"was found "+"in no papers"
-        }
-    return false;
 
-    
+        } else {
+            document.getElementById("result").innerHTML = "\"" +jsonResponse.Query + "\"was found in no papers"
+        }
  };
 
 function onload() {
+
     document.getElementById("result").style.display = 'block';
     document.getElementById("qpl").style.display = 'none';
     document.getElementById("msl").style.display = 'none';
+    
+
     var xhr = new XMLHttpRequest();
     xhr.open('GET', '/subjects',true);
     
@@ -51,11 +52,18 @@ function onload() {
 
 
 }
+
 function addcat(item,index) {
     var s = document.getElementById("subjects");
     var opt = document.createElement('option')
     opt.value = item;
     opt.innerHTML = item;
+    if (s.childElementCount > index) {
+
+    if (s.childElementCount[index].innerHTML == value) {
+        return;
+    }
+    }
     s.appendChild(opt);
 
 
