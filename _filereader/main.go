@@ -1,5 +1,5 @@
 package main
-
+//Copyright © 2020 cents02
 import (
 	"bytes"
 	"database/sql"
