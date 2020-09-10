@@ -1,3 +1,4 @@
+//Copyright © 2020 cents02
 package main
 
 import (
