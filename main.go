@@ -46,19 +46,23 @@ func main() {
 
 		dir := path.Join("_past-papers", subject)
 
-		//matcher := search.New(language.English, search.Loose, search.IgnoreCase)
 		results := "not found"
 
-		bquestion := []byte(strings.ToLower(string([]rune(question))))
+		bquestion := []byte(strings.ToLower(string([]rune(question)))) // Convert query to bytes for performance
+
 		var papername string
 		var qpl string
 		var msl string
+		// Goes through each paper in the db
 		err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 			if info.IsDir() {
 				return nil
 			}
+
 			ext := strings.Split(info.Name(), ".")
 			extt := ext[len(ext)-1]
+
+			//check only the modified papers
 			if extt == "pdf" {
 				return nil
 			}
@@ -69,15 +73,7 @@ func main() {
 
 			if bytes.Contains(bdata, bquestion) {
 				results = path
-				/* This is for another time since it doesn't work
-				pat := matcher.Compile(bdata)
-				st, end := pat.Index(bquestion)
-				if st == -1 || end == -1 {
-					return nil
-				}
-				data := string(bdata)
-				results += string(data[st:end])
-				*/
+				//query the db
 				db, err := sql.Open("sqlite3", "./db/papers.db")
 				if err != nil {
 					panic(err)
@@ -87,7 +83,7 @@ func main() {
 				db.Close()
 				if err := row.Scan(&papername, &qpl, &msl); err != nil {
 
-					papername = "NA"
+					papername = "NA" //Incase of db error throw NA value
 					qpl = "NA"
 					msl = "NA"
 
@@ -100,7 +96,7 @@ func main() {
 			panic(err)
 		}
 		if len(question) > 57 {
-			question = question[:57] + "..."
+			question = question[:57] + "..." //Cut off long questions
 		}
 		if results == "not found" {
 			context.JSON(map[string]string{"Query": question, "Found": "False"})
@@ -108,8 +104,9 @@ func main() {
 			context.JSON(map[string]string{"Query": question, "Found": "True", "Paper": strings.ReplaceAll(papername, ".pdf", ""), "QPL": qpl, "MSL": msl})
 		}
 	})
+
 	finder.Handle("GET", "/subjects", func(context iris.Context) {
-		file, _ := os.Open("_past-papers")
+		file, _ := os.Open("_past-papers") //Returs a list of all available past papers
 
 		list, _ := file.Readdirnames(0)
 		context.JSON(map[string]string{"Subjects": strings.Join(list, ",")})
