@@ -17,3 +17,5 @@
 #Other
 .vscode
 .idea
+_past-papers/*
+db/papers.db
