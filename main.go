@@ -10,17 +10,34 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
 	"github.com/kataras/iris/v12/middleware/recover"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/spf13/viper"
 )
 
 func main() {
+	//Lets load up the configs before we do anything
+	viper.SetConfigName("server_config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(fmt.Errorf("CONFIG ERROR: ", err))
+	}
+	debug := viper.GetBool("Server.Debug")
+	host := viper.GetString("Server.Host")
+	port := viper.GetInt("Server.Port")
+
 	finder := iris.New()
-	finder.Logger().SetLevel("debug")
+	if debug {
+		finder.Logger().SetLevel("debug")
+	}
+
 	finder.Use(recover.New())
 	finder.Use(logger.New())
 
@@ -78,11 +95,13 @@ func main() {
 				if err != nil {
 					panic(err)
 				}
-				fmt.Println(path)
+				if debug {
+					fmt.Println(path)
+				}
 				row := db.QueryRow(`SELECT papername,qpl,msl FROM paperinfo WHERE filepath = ?`, "../"+strings.ReplaceAll(path, "\\", "/"))
 				db.Close()
 				if err := row.Scan(&papername, &qpl, &msl); err != nil {
-
+					fmt.Println("DB ERROR: ", err, "for paper: ", path)
 					papername = "NA" //Incase of db error throw NA value
 					qpl = "NA"
 					msl = "NA"
@@ -100,6 +119,7 @@ func main() {
 		}
 		if results == "not found" {
 			context.JSON(map[string]string{"Query": question, "Found": "False"})
+			fmt.Println("FAILED QUERY: ", question)
 		} else {
 			context.JSON(map[string]string{"Query": question, "Found": "True", "Paper": strings.ReplaceAll(papername, ".pdf", ""), "QPL": qpl, "MSL": msl})
 		}
@@ -112,5 +132,5 @@ func main() {
 		context.JSON(map[string]string{"Subjects": strings.Join(list, ",")})
 	})
 
-	finder.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
+	finder.Run(iris.Addr(host+":"+strconv.Itoa(port)), iris.WithoutServerError(iris.ErrServerClosed))
 }

@@ -1,0 +1,7 @@
+Server:
+    host: "localhost"
+    Debug: true
+    Port: 8080
+
+Search:
+    minimum words: 3 # Minimum words in a row it can use to do loose search. The lower the more innacurate it is.
