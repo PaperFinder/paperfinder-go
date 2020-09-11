@@ -1,4 +1,5 @@
 package main
+
 //Copyright © 2020 cents02
 import (
 	"bytes"
@@ -41,7 +42,7 @@ func main() {
 			if strings.Contains(link, ".pdf") && strings.Contains(link, "QP") {
 				fmt.Printf("Link found: %q -> %s\n", e.Text, link)
 
-				//Here we are filtering out useless stuff
+				//Here we are filtering out pathing stuff
 				tempname := strings.Split(link, "/download/")[1]
 				fpath := strings.ReplaceAll(tempname, "/Past-Papers/", "/")
 				fname := fpath[strings.LastIndex(fpath, "/"):]
@@ -49,7 +50,7 @@ func main() {
 				fpath = strings.ReplaceAll(fpath, " ", "-")
 				subject := strings.Split(tempname, "/")[0]
 				unit := strings.Split(tempname, "/")[4]
-
+				//We create shorter versions of the paper names in order to avoid long filenames
 				words := strings.Split(fname, " ")
 				if words[2] == "(IAL)" {
 					fname = words[0][1:3] + words[1] + words[3] + "IAL" + ".pdf"
@@ -165,8 +166,8 @@ func install(path string, fpapername, fName string, dir string, name string, dur
 
 	strdata = strings.ReplaceAll(strdata, ".", " ")
 	strdata = strings.ReplaceAll(strdata, "_", "")
-	strdata = strings.ReplaceAll(strdata, "\n", " ")
-	strdata = strings.ReplaceAll(strdata, "\r", " ")
+	strdata = strings.ReplaceAll(strdata, "\n", "  ")
+	strdata = strings.ReplaceAll(strdata, "\r", "  ")
 	unit := ""
 	subject := ""
 	qpl := ""
@@ -210,6 +211,11 @@ func install(path string, fpapername, fName string, dir string, name string, dur
 	if err != nil {
 		panic(err)
 	}
+	qdb, err := sql.Open("sqlite3", "../db/quest.db")
+	if err != nil {
+		panic(err)
+	}
+
 	insertpaper := `INSERT INTO paperinfo(ID, filepath, papername, subject,unit,qpl,msl) VALUES (NULL,?,?,?,?,?,?)`
 	statement, err := db.Prepare(insertpaper)
 
