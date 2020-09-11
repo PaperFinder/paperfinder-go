@@ -27,7 +27,7 @@ func main() {
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
 	if err != nil {
-		panic(fmt.Errorf("CONFIG ERROR: ", err))
+		panic(fmt.Errorf("CONFIG ERROR: %s", err))
 	}
 	debug := viper.GetBool("Server.Debug")
 	host := viper.GetString("Server.Host")
