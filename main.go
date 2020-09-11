@@ -32,7 +32,7 @@ func main() {
 	debug := viper.GetBool("Server.Debug")
 	host := viper.GetString("Server.Host")
 	port := viper.GetInt("Server.Port")
-
+	accuracymin := viper.GetInt("Search.accuracy_cutoff")
 	finder := iris.New()
 	if debug {
 		finder.Logger().SetLevel("debug")
@@ -87,8 +87,15 @@ func main() {
 			bdata, _ := ioutil.ReadFile(path)
 
 			bdata = []byte(strings.ToLower(string(bdata)))
-
-			if bytes.Contains(bdata, bquestion) {
+			found := bytes.Contains(bdata, bquestion)
+			advfound := false
+			accuracy := 100
+			if !found {
+				fmt.Println("TESTING ADV PAPER: " + path)
+				advfound, accuracy = advsearch(bdata, bquestion)
+			}
+			if found || (advfound && accuracy > accuracymin) {
+				fmt.Println("HIT WITH ACCURACY: " + strconv.Itoa(accuracy))
 				results = path
 				//query the db
 				db, err := sql.Open("sqlite3", "./db/papers.db")
@@ -98,6 +105,7 @@ func main() {
 				if debug {
 					fmt.Println(path)
 				}
+
 				row := db.QueryRow(`SELECT papername,qpl,msl FROM paperinfo WHERE filepath = ?`, "../"+strings.ReplaceAll(path, "\\", "/"))
 				db.Close()
 				if err := row.Scan(&papername, &qpl, &msl); err != nil {
@@ -107,6 +115,7 @@ func main() {
 					msl = "NA"
 
 				}
+
 			}
 
 			return nil
@@ -133,4 +142,37 @@ func main() {
 	})
 
 	finder.Run(iris.Addr(host+":"+strconv.Itoa(port)), iris.WithoutServerError(iris.ErrServerClosed))
+}
+
+//This function should be moved to a different package when multithreading will be implemented
+func advsearch(bdata []byte, bquestion []byte) (bool, int) {
+	accuracy := 100
+	//bquestionparts := bytes.Split(bquestion, []byte(" ")) //lets split the words
+	if len(bquestion) < 3 { //Being provided with two words or less, this isn't going to be accurate at all
+		return false, accuracy
+	}
+	if bytes.Contains(bdata, bytes.ReplaceAll(bquestion, []byte("."), []byte(""))) { //Lets attempt to check if full stops stopped us from detecting the paper.
+		return true, accuracy
+	}
+	//See documentation for further information
+
+	InOutWeight := 40 / len(bquestion)
+	startind := 1
+	endind := len(bquestion)
+
+	for endind-startind > int(len(bquestion)/4) { //Attempt an out to inside search
+		fmt.Println("TESTING: " + string(bquestion[startind:endind]))
+		if bytes.Contains(bdata, bquestion[startind:endind]) {
+			return true, accuracy
+		}
+		accuracy = accuracy - InOutWeight
+		startind++
+		if bytes.Contains(bdata, bquestion[startind:endind]) {
+			return true, accuracy
+		}
+		endind--
+		accuracy = accuracy - InOutWeight
+	}
+
+	return false, accuracy
 }
