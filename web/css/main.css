@@ -2,115 +2,91 @@
 
 * {
     font-family: Raleway, sans-serif;
-}
-
-html, body {
-    height: 100%;
     margin: 0;
+    padding: 0;
 }
 
 body {
     background: url(../assets/image_background.png);
-    padding: 0 1vw;
+    padding: 0 8px;
 }
 
 .wrapper {
+    align-items: center; 
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center; 
-    min-height: 100%;
+    min-height: 90vh;
 }
 
-h1 {
-    font-size: 64px;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-}
-
-.icon {
+#header {
     display: inline-block;
-}
-
-#book {
-    animation: book 8s infinite;
-}
-
-@keyframes book {
-    0% { opacity: 1; }
-    50% { opacity: 0; }
-    100% { opacity: 1; }
-}
-
-#book2 {
-    animation: book2 8s infinite;
-}
-
-@keyframes book2 {
-    0% { opacity: 0; }
-    50% { opacity: 1; }
-    100% { opacity: 0; }
+    position: relative;
 }
 
 #glass {
-    animation: glass 8s infinite ease-in-out;
-    transform: translateX(-100%);
-    font-size: 48px;
-    width: 0;
+    animation-duration: 16s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+    display: block;
+    left: 0%;
+    position: absolute;
+    top: 0;
+    transform: translateX(0%);
 }
 
-@keyframes glass {
-    0% { transform: translateX(-72px); }
-    50% { transform: translateX(-542px); }
-    100% { transform: translateX(-72px); }
+#book, #book2 {
+    animation: book-animation infinite 16s ease-in-out;
 }
 
-footer {
-    font-size: 18px;
-    margin-top: -32px;
-    text-align: center;
+#book2 {
+    animation-delay: 8s;
 }
 
 form {
     box-shadow: hsl(200, 70%, 70%) 0px 5px 0px;
     display: flex;
-    margin-top: 8px;
-    max-width: 960px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 8px 0 16px 0;
 }
 
-#subjects, #button, #question, #result {
+#form-wrapper {
+    display: flex;
+    flex-flow: row wrap;
+}
+
+select, input {
     border: none;
-    font-size: 20px;
-    padding: 8px 16px;
+    display: inline;
+    flex: 1;
 }
 
 #result {
+    word-break: break-all;
     max-width: 600px;
 }
 
 #button {
     background-color: hsl(200, 70%, 70%);
-    border-radius: 0 15px 0 0;
     color: white;
     font-weight: bold;
     text-shadow: hsl(200, 70%, 50%) 2px 1px 0;
-}
-
-button:hover, #button:hover {
-    cursor: pointer;
 }
 
 button {
     border: none;
     border-radius: 5px;
     color: white;
-    font-size: 16px;
     font-weight: bold;
-    padding: 16px 32px;
+    margin: 8px 4px;
     text-align: center;
     text-decoration: none;
     transition: 0.15s;
+}
+
+button:hover, #button:hover {
+    cursor: pointer;
 }
 
 #qpl button, #msl button {
@@ -120,4 +96,117 @@ button {
 
 #qpl button:hover, #msl button:hover {
     background-color: hsl(200, 70%, 70%);
+}
+
+footer {
+    text-align: center;
+}
+
+a {
+    color: black;
+}
+
+@keyframes book-animation {
+    0% { opacity: 1; }
+    50% { opacity: 0.1; }
+    100% { opacity: 1; }
+}
+
+@keyframes looking-animation {
+    0% {
+        left: 0%;
+        transform: translateX(0%);
+    }
+
+    50% {
+        left: 100%;
+        transform: translateX(-100%);
+    }
+
+    0% {
+        left: 0%;
+        transform: translateX(0%);
+    }
+}
+
+@keyframes looking-animation-mobile {
+    0% {
+        left: 0%;
+        transform: translateX(0%);
+    }
+
+    50% {
+        left: 100%;
+        top: 100%;
+        transform: translateX(-100%) translateY(-100%);
+    }
+
+    0% {
+        left: 0%;
+        transform: translateX(0%);
+    }
+}
+
+@media screen and (max-width: 400px) {
+    #glass {
+        animation-name: looking-animation-mobile;
+    }
+
+    form {
+        flex-direction: column;
+    }
+
+    #form-wrapper {
+        flex: 1;
+    }
+
+    #form-wrapper select {
+        flex: 1;
+    }
+
+    #form-wrapper input {
+        flex: 2;
+    }
+
+    h1 {
+        font-size: 12vw;
+    }
+
+    select, input {
+        padding: 1.5vh 4vw;
+    }
+
+    button {
+        padding: 2vh 8vw;
+    }
+
+    .wrapper {
+        min-height: 80vh;
+    }
+}
+
+@media screen and (min-width: 401px) {
+    #glass {
+        animation-name: looking-animation;
+    }
+
+    #header-breaker {
+        display: none;
+    }
+
+    h1 {
+        font-size: 42px;
+    }
+
+    select, input {
+        padding: 8px 16px;
+    }
+
+    button {
+        padding: 16px 32px;
+    }
+
+    #button {
+        border-radius: 0 15px 0 0;
+    }
 }

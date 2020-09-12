@@ -2,7 +2,6 @@ function search() {
     onload();
 
     var s = document.getElementById("subjects");
-
     var subject = s.options[s.selectedIndex].value;
 
     var q = document.getElementById("question");
@@ -16,23 +15,22 @@ function search() {
         }
     };
 
-    xhr.open('GET', '/finder?q=' + question + '&s=' + subject,false);
+    xhr.open('GET', '/finder?q=' + question + '&s=' + subject, false);
+    xhr.send();
     
-    xhr.send()
-        var jsonResponse = JSON.parse(xhr.responseText);
-        document.getElementById("result").innerHTML = gabi_content(jsonResponse.Query);
+    var jsonResponse = JSON.parse(xhr.responseText);
 
-        if (jsonResponse.Found == 'True') {
-            document.getElementById("result").innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was found in "+ jsonResponse.Paper;
-            document.getElementById("qpl").href = jsonResponse.QPL;
-            document.getElementById("msl").href = jsonResponse.MSL;
-            document.getElementById("result").style.display = '';
-            document.getElementById("qpl").style.display = '';
-            document.getElementById("msl").style.display = '';
-        } else {
-            document.getElementById("result").innerHTML = "\"" + gabi_content(jsonResponse.Query) + "\"was found in no papers"
-        }
- };
+    if (jsonResponse.Found == 'True') {
+        document.getElementById("result").innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was found in "+ jsonResponse.Paper;
+        document.getElementById("qpl").href = jsonResponse.QPL;
+        document.getElementById("msl").href = jsonResponse.MSL;
+        document.getElementById("result").style.display = '';
+        document.getElementById("qpl").style.display = '';
+        document.getElementById("msl").style.display = '';
+    } else {
+        document.getElementById("result").innerHTML = "\"" + gabi_content(jsonResponse.Query) + "\" was found in no papers";
+    }
+ }
 
 function gabi_content(content) {
     var temp = document.createElement("div");
@@ -49,8 +47,8 @@ function onload() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', '/subjects',true);
     
-    xhr.onload  = function() {
-        var jsonResponse =  JSON.parse(xhr.responseText);
+    xhr.onload = function() {
+        var jsonResponse = JSON.parse(xhr.responseText);
         var subj = jsonResponse.Subjects.split(",")
         subj.forEach(addcat)
      };
