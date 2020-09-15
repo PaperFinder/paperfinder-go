@@ -12,6 +12,20 @@
     transform: translateY(100%); 
     width: calc(100% - 64px);
 }
+#cookiePopdown {
+    animation: slide-down 0.75s ease-in-out forwards;
+    animation-delay: 5s;
+    background: hsl(200, 70%, 70%);
+    bottom: 0;
+    color: white;
+    font-weight: 400;
+    left: 0;
+    padding: 32px;
+    position: fixed;
+    text-shadow: hsl(200, 70%, 50%) 2px 1px 0;
+    transform: translateY(100%); 
+    width: calc(100% - 64px);
+}
 
 @keyframes slide-up {
     from { transform: translateY(100%); }

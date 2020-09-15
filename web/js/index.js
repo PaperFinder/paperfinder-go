@@ -75,4 +75,5 @@ function get_cookie() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', '/getcookie', false);
     xhr.send();
+    document.getElementById("cookiePopup").id = "cookiePopdown";
 }
