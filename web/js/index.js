@@ -71,3 +71,8 @@ function addcat(item, index) {
 
     s.appendChild(opt);
 }
+function get_cookie() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/getcookie', false);
+    xhr.send();
+}
