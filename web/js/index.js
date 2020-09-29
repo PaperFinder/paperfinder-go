@@ -22,8 +22,13 @@ function search() {
         var jsonResponse = JSON.parse(xhr.responseText);
         document.getElementById("result").innerHTML = gabi_content(jsonResponse.Query);
 
-        if (jsonResponse.Found == 'True') {
-            document.getElementById("result").innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was found in "+ jsonResponse.Paper;
+        if (jsonResponse.Found == 'True' || jsonResponse.Found == 'Partial') {
+            if (jsonResponse.Found != 'Partial'){
+                document.getElementById("result").innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was found in "+ jsonResponse.Paper;
+            } else {
+                document.getElementById("result").innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was <b>partially<b> found in "+ jsonResponse.Paper;
+            }
+            
             document.getElementById("qpl").href = jsonResponse.QPL;
             document.getElementById("msl").href = jsonResponse.MSL;
             document.getElementById("result").style.display = '';
