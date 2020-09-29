@@ -1,3 +1,8 @@
+var cockiePopup = document.getElementById("cookiePopup");
+var resultField = document.getElementById("result");
+var qplButton = document.getElementById("qpl");
+var mslButton = document.getElementById("msl");
+
 function search() {
     onload();
 
@@ -21,14 +26,15 @@ function search() {
     var jsonResponse = JSON.parse(xhr.responseText);
 
     if (jsonResponse.Found == 'True') {
-        document.getElementById("result").innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was found in "+ jsonResponse.Paper;
-        document.getElementById("qpl").href = jsonResponse.QPL;
-        document.getElementById("msl").href = jsonResponse.MSL;
-        document.getElementById("result").style.display = '';
-        document.getElementById("qpl").style.display = '';
-        document.getElementById("msl").style.display = '';
+        resultField.innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was found in "+ jsonResponse.Paper;
+        qplButton.href = jsonResponse.QPL;
+        mslButton.href = jsonResponse.MSL;
+
+        resultField.style.display = '';
+        qplButton.style.display = '';
+        mslButton.style.display = '';
     } else {
-        document.getElementById("result").innerHTML = "\"" + gabi_content(jsonResponse.Query) + "\" was found in no papers";
+        resultField.innerHTML = "\"" + gabi_content(jsonResponse.Query) + "\" was found in no papers";
     }
  }
 
@@ -40,20 +46,24 @@ function gabi_content(content) {
 }
 
 function onload() {
-    document.getElementById("result").style.display = 'block';
-    document.getElementById("qpl").style.display = 'none';
-    document.getElementById("msl").style.display = 'none';
+    resultField.style.display = 'block';
+    qplButton.style.display = 'none';
+    mslButton.style.display = 'none';
 
     var xhr = new XMLHttpRequest();
     xhr.open('GET', '/subjects',true);
     
     xhr.onload = function() {
         var jsonResponse = JSON.parse(xhr.responseText);
-        var subj = jsonResponse.Subjects.split(",")
-        subj.forEach(addcat)
+        var subj = jsonResponse.Subjects.split(",");
+        subj.forEach(addcat);
      };
-
-     xhr.send()
+     if(document.cookie.indexOf('last_pref=') > 0){
+        removeClass(cockiePopup, "popupActive");
+     }
+     
+     
+     xhr.send();
 }
 
 function addcat(item, index) {
@@ -71,3 +81,17 @@ function addcat(item, index) {
 
     s.appendChild(opt);
 }
+
+function get_cookie() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/getcookie', false);
+    xhr.send();
+
+    removeClass(cockiePopup, "popupActive");
+}
+
+function popup_close() {
+    removeClass(cockiePopup, "popupActive");
+}
+
+setTimeout(addClass, 5000, cockiePopup, "popupActive");

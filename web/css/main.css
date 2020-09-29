@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Raleway&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap');
 
 * {
     font-family: Raleway, sans-serif;
@@ -104,6 +104,13 @@ footer {
 
 a {
     color: black;
+    text-decoration: none;
+    transition: 0.1s;
+}
+
+a:hover {
+    color: hsl(200, 70%, 50%);
+    font-weight: 900;
 }
 
 @keyframes book-animation {
