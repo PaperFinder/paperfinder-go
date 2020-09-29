@@ -58,7 +58,11 @@ function onload() {
         var subj = jsonResponse.Subjects.split(",");
         subj.forEach(addcat);
      };
-
+     if(document.cookie.indexOf('last_pref=') > 0){
+        removeClass(cockiePopup, "popupActive");
+     }
+     
+     
      xhr.send();
 }
 
