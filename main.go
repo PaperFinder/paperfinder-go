@@ -185,20 +185,86 @@ func advsearch(bdata []byte, bquestion []byte) (bool, int, []byte) {
 	startind := 1
 	endind := len(bquestion)
 	outinaccuracy := 0
+	outinFound := false
 	for endind-startind > int(len(bquestion)/4) { //Attempt an out to inside search
 		outinaccuracy := int((float64(endind-startind) / float64(len(bquestion))) * 100) //holy shit I spent an hour trying to fix this cause I didn't put float64. thx golang
 		fmt.Println(accuracy)
 
 		fmt.Println("TESTING: " + string(bquestion[startind:endind]))
 		if bytes.Contains(bdata, bquestion[startind:endind]) {
+			outinFound := true
 			break
 		}
 		startind++
 		if bytes.Contains(bdata, bquestion[startind:endind]) {
+			outinFound := true
 			break
 		}
 		endind--
 	}
-	//TODO ADD MIDDLE OUT
+	if outinaccuracy > 60 {
+		return outinFound, outinaccuracy, bquestion
+	}
+	/*
+	ok you might be wondering what is going on here
+	I wonder too as its 3 am but I will try my best to explaint his madness
+	The code below will be run incase the outin fails, which most likely means that the typo is in the middle of the query
+	for that reason, we try to find the most matches from the left and right queary
+	e.g
+	text: This is normal text!
+	query: This is nrmal text!
+	process:
+			   rightind
+				v
+	[this is n]o[rmal text!] 
+			 ^
+		  leftind
+	querygap: 0
+	textgap: 1
+	within the limit so it passes it
+		
+	example two:
+
+	text: This is abnormal text!
+	query: This is nrmal text!
+				rightind
+				   v
+	[this is ]abno[rmal text!] 
+			^
+		leftind
+	querygap: 0
+	text gap: 4
+	Since textgap < quearygap + 4 is false, then it doesn not pass
+	goodnight
+	*/
+	leftind := 1
+	rightind := 1
+	for leftind > int(len(bquestion)) { //Attempt an a middleout search
+		if bytes.Contains(bdata, bquestion[0:leftind+1]) {
+			leftind++
+		} else {
+			break
+		}
+	}
+	rightind = leftind
+	for startind > int(len(bquestion)) { 
+		if bytes.Contains(bdata, bquestion[rightind + 1:]) {	
+			rightind++
+		}
+		else {
+			break
+		}
+	}
+	textGap := bytes.Index(bdata,bquestion[rightind:]) - bytes.Index(bdata,bquestion[0:leftind])
+	queryGap := rightind - leftind
+	accuracy := int((float64(len(bquestion)) - float64(queryGap)) / float64(len(bquestion)) * 100)
+	if (textGap < queryGap + 4)
+	{
+		return true, accuracy, bquestion
+	}
 	return false, 0, bquestion
+
+			
+
+
 }
