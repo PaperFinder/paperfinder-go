@@ -24,7 +24,8 @@ function search() {
     xhr.send();
     
 
-    xhr.send()
+    var jsonResponse = JSON.parse(xhr.responseText);
+
         var jsonResponse = JSON.parse(xhr.responseText);
         document.getElementById("result").innerHTML = gabi_content(jsonResponse.Query);
         if (jsonResponse.Found == 'True' || jsonResponse.Found == 'Partial') {

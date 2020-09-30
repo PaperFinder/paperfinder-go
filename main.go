@@ -111,13 +111,15 @@ func main() {
 			var tmpBackupbque []byte
 			tmpbackupacc := 0
 			if !found {
-				fmt.Println("BACKUP CHECKING: " + path)
+				//fmt.Println("BACKUP CHECKING: " + path)
 				tmpBackupfound, tmpbackupacc, tmpBackupbque = advsearch(bdata, bquestion)
 			} else {
 				directfind = true
 			}
-			fmt.Println("BACKUPACC: " + strconv.Itoa(tmpbackupacc))
-			fmt.Println("TMPBACKUPACC: " + strconv.Itoa(tmpbackupacc))
+			if debug {
+				fmt.Println("BACKUPACC: " + strconv.Itoa(tmpbackupacc))
+				fmt.Println("TMPBACKUPACC: " + strconv.Itoa(tmpbackupacc))
+			}
 			if found || (tmpBackupfound && tmpbackupacc > backupacc && tmpbackupacc > accuracymin) {
 				fmt.Println("SUCCESFUL QUERY IN " + subject)
 				results = path
