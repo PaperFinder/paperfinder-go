@@ -26,7 +26,7 @@ function search() {
             if (jsonResponse.Found != 'Partial'){
                 document.getElementById("result").innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was found in "+ jsonResponse.Paper;
             } else {
-                document.getElementById("result").innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was <b>partially<b> found in "+ jsonResponse.Paper;
+                document.getElementById("result").innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was potentially found in "+ jsonResponse.Paper;
             }
             
             document.getElementById("qpl").href = jsonResponse.QPL;

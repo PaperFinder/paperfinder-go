@@ -105,6 +105,8 @@ func main() {
 			if !found {
 				fmt.Println("BACKUP CHECKING: " + path)
 				tmpBackupfound, tmpbackupacc, tmpBackupbque = advsearch(bdata, bquestion)
+			} else {
+				directfind = true
 			}
 			fmt.Println("BACKUPACC: " + strconv.Itoa(tmpbackupacc))
 			fmt.Println("TMPBACKUPACC: " + strconv.Itoa(tmpbackupacc))
@@ -139,8 +141,6 @@ func main() {
 					if debug {
 						fmt.Println(string(backupbque))
 					}
-				} else {
-					directfind = true
 				}
 
 			}
@@ -190,10 +190,7 @@ func advsearch(bdata []byte, bquestion []byte) (bool, int, []byte) {
 	outinaccuracy := 0
 	outinFound := false
 	for endind-startind > int(len(bquestion)/4) { //Attempt an out to inside search
-		outinaccuracy := int((float64(endind-startind) / float64(len(bquestion))) * 100) //holy shit I spent an hour trying to fix this cause I didn't put float64. thx golang
-		fmt.Println("DIRECTACC: " + strconv.Itoa(outinaccuracy))
-
-		//fmt.Println("TESTING: " + string(bquestion[startind:endind]))
+		outinaccuracy = int((float64(endind-startind) / float64(len(bquestion))) * 100) //holy shit I spent an hour trying to fix this cause I didn't put float64. thx golang
 		if bytes.Contains(bdata, bquestion[startind:endind]) {
 			outinFound = true
 			break
@@ -222,9 +219,7 @@ func advsearch(bdata []byte, bquestion []byte) (bool, int, []byte) {
 		[this is n]o[rmal text!]
 				 ^
 			  leftind
-		querygap: 0
-		textgap: 1
-		within the limit so it passes it
+		More than 90% matches so it passes
 
 		example two:
 
@@ -237,43 +232,38 @@ func advsearch(bdata []byte, bquestion []byte) (bool, int, []byte) {
 			leftind
 		querygap: 0
 		text gap: 4
-		Since textgap < quearygap + 4 is false, then it doesn not pass
-		goodnight
+		Less than 90% matches so it doesnt pass
 	*/
 
 	//Nothing works beyond this point
 	leftind := 1
 	rightind := 1
-	for leftind > int(len(bquestion)) { //Attempt an a middleout search
+	for leftind < int(len(bquestion)) { //Attempt an a middleout search
 		if bytes.Contains(bdata, bquestion[:leftind+1]) {
-			fmt.Println("HIT")
 			leftind++
 		} else {
 			break
 		}
 	}
 	rightind = leftind
-	for rightind > int(len(bquestion)) {
+	for rightind < int(len(bquestion)) {
 		if bytes.Contains(bdata, bquestion[rightind+1:]) {
-			fmt.Println("HIT2")
 			rightind++
-		} else {
 			break
+		} else {
+			rightind++
 		}
 	}
-	textGap := bytes.Index(bdata, bquestion[0:leftind]) - bytes.Index(bdata, bquestion[rightind:])
-	queryGap := rightind - leftind
-
-	accuracy := int((float64(len(bquestion)) - float64(queryGap)) / float64(len(bquestion)) * 100)
-	fmt.Println("MIDOUT lind: " + strconv.Itoa(leftind))
-	fmt.Println("MIDOUT rind: " + strconv.Itoa(rightind))
-	fmt.Println("MIDOUT CHECK: " + strconv.Itoa(accuracy))
-	fmt.Println("MIDOUT TGAP: " + strconv.Itoa(textGap))
-	fmt.Println("MIDOUT QGAP: " + strconv.Itoa(queryGap))
-	if textGap < queryGap+4 {
-		return true, accuracy, bquestion
+	// Here we find the length of the text inbetween our findings
+	textGap := (bytes.Index(bdata, bquestion[:leftind]) + leftind) - (bytes.Index(bdata, bquestion[rightind:]))
+	if textGap < 0 {
+		textGap = -textGap
 	}
 
+	bquestionlength := float64(len(bquestion))
+	accuracy := int(((bquestionlength - float64(textGap)) / bquestionlength) * 100)
+	if accuracy > 90 {
+		return true, accuracy, bquestion
+	}
 	return false, 0, bquestion
-
 }
