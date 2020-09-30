@@ -15,7 +15,7 @@ You know what it is
   **Usage:** /finder?q=<question>&s=<subject>  
   **Rensponse:** It returns a json file with the following parameters:
    - Query: It is the question submitted
-   - Found: Whether a match was found
+   - Found: Whether a match was found. This can be either: True,Partial,False
      (If a paper is found *only*)
    - Paper: Full paper name
    - QPL: Question paper link
