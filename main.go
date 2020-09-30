@@ -70,6 +70,16 @@ func main() {
 		var papername string
 		var qpl string
 		var msl string
+
+		backupfound := false
+
+		//backup* are the fallback incase there isn't a perfect match we need to find the closest thing to it
+		//backupque is not used yet. It will be introduced along with the paper text extracting
+		var backupbque []byte
+		backupacc := 0
+		var backuppapername string
+		var backupqpl string
+		var backupmsl string
 		// Goes through each paper in the db
 		err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 			if info.IsDir() {
@@ -88,15 +98,19 @@ func main() {
 
 			bdata = []byte(strings.ToLower(string(bdata)))
 			found := bytes.Contains(bdata, bquestion)
-			advfound := false
-			accuracy := 100
+			tmpBackupfound := false
+			var tmpBackupbque []byte
+			tmpbackupacc := 0
 			if !found {
-				fmt.Println("TESTING ADV PAPER: " + path)
-				advfound, accuracy = advsearch(bdata, bquestion)
+				fmt.Println("BACKUP CHECKING: " + path)
+				tmpBackupfound, tmpbackupacc, tmpBackupbque = advsearch(bdata, bquestion)
 			}
-			if found || (advfound && accuracy > accuracymin) {
-				fmt.Println("HIT WITH ACCURACY: " + strconv.Itoa(accuracy))
+			fmt.Println("BACKUPACC: " + strconv.Itoa(tmpbackupacc))
+			fmt.Println("TMPBACKUPACC: " + strconv.Itoa(tmpbackupacc))
+			if found || (tmpBackupfound && tmpbackupacc > backupacc && tmpbackupacc > accuracymin) {
+				fmt.Println("SUCCESFUL QUERY IN " + subject)
 				results = path
+
 				//query the db
 				db, err := sql.Open("sqlite3", "./db/papers.db")
 				if err != nil {
@@ -113,7 +127,17 @@ func main() {
 					papername = "NA" //Incase of db error throw NA value
 					qpl = "NA"
 					msl = "NA"
-
+				}
+				if tmpBackupfound {
+					backupbque = tmpBackupbque
+					backuppapername = papername
+					backupqpl = qpl
+					backupmsl = msl
+					backupacc = tmpbackupacc
+					backupfound = true
+					if debug {
+						fmt.Println(string(backupbque))
+					}
 				}
 
 			}
@@ -123,12 +147,16 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+
+		//If advanced search was used, we need to state what we found
 		if len(question) > 57 {
 			question = question[:57] + "..." //Cut off long questions
 		}
 		if results == "not found" {
 			context.JSON(map[string]string{"Query": question, "Found": "False"})
 			fmt.Println("FAILED QUERY: ", question)
+		} else if backupfound {
+			context.JSON(map[string]string{"Query": question, "Found": "Partial", "Paper": strings.ReplaceAll(backuppapername, ".pdf", ""), "QPL": backupqpl, "MSL": backupmsl})
 		} else {
 			context.JSON(map[string]string{"Query": question, "Found": "True", "Paper": strings.ReplaceAll(papername, ".pdf", ""), "QPL": qpl, "MSL": msl})
 		}
@@ -145,34 +173,98 @@ func main() {
 }
 
 //This function should be moved to a different package when multithreading will be implemented
-func advsearch(bdata []byte, bquestion []byte) (bool, int) {
-	accuracy := 100
-	//bquestionparts := bytes.Split(bquestion, []byte(" ")) //lets split the words
-	if len(bquestion) < 3 { //Being provided with two words or less, this isn't going to be accurate at all
-		return false, accuracy
+func advsearch(bdata []byte, bquestion []byte) (bool, int, []byte) {
+
+	if len(bquestion) < 10 { //Being provided with 5 characters, this isn't going to be accurate at all
+		return false, 0, bquestion
 	}
 	if bytes.Contains(bdata, bytes.ReplaceAll(bquestion, []byte("."), []byte(""))) { //Lets attempt to check if full stops stopped us from detecting the paper.
-		return true, accuracy
+		return true, 100, bquestion
 	}
-	//See documentation for further information
 
-	InOutWeight := 40 / len(bquestion)
 	startind := 1
 	endind := len(bquestion)
-
+	outinaccuracy := 0
+	outinFound := false
 	for endind-startind > int(len(bquestion)/4) { //Attempt an out to inside search
+		outinaccuracy := int((float64(endind-startind) / float64(len(bquestion))) * 100) //holy shit I spent an hour trying to fix this cause I didn't put float64. thx golang
+		fmt.Println(accuracy)
+
 		fmt.Println("TESTING: " + string(bquestion[startind:endind]))
 		if bytes.Contains(bdata, bquestion[startind:endind]) {
-			return true, accuracy
+			outinFound := true
+			break
 		}
-		accuracy = accuracy - InOutWeight
 		startind++
 		if bytes.Contains(bdata, bquestion[startind:endind]) {
-			return true, accuracy
+			outinFound := true
+			break
 		}
 		endind--
-		accuracy = accuracy - InOutWeight
 	}
+	if outinaccuracy > 60 {
+		return outinFound, outinaccuracy, bquestion
+	}
+	/*
+	ok you might be wondering what is going on here
+	I wonder too as its 3 am but I will try my best to explaint his madness
+	The code below will be run incase the outin fails, which most likely means that the typo is in the middle of the query
+	for that reason, we try to find the most matches from the left and right queary
+	e.g
+	text: This is normal text!
+	query: This is nrmal text!
+	process:
+			   rightind
+				v
+	[this is n]o[rmal text!] 
+			 ^
+		  leftind
+	querygap: 0
+	textgap: 1
+	within the limit so it passes it
+		
+	example two:
 
-	return false, accuracy
+	text: This is abnormal text!
+	query: This is nrmal text!
+				rightind
+				   v
+	[this is ]abno[rmal text!] 
+			^
+		leftind
+	querygap: 0
+	text gap: 4
+	Since textgap < quearygap + 4 is false, then it doesn not pass
+	goodnight
+	*/
+	leftind := 1
+	rightind := 1
+	for leftind > int(len(bquestion)) { //Attempt an a middleout search
+		if bytes.Contains(bdata, bquestion[0:leftind+1]) {
+			leftind++
+		} else {
+			break
+		}
+	}
+	rightind = leftind
+	for startind > int(len(bquestion)) { 
+		if bytes.Contains(bdata, bquestion[rightind + 1:]) {	
+			rightind++
+		}
+		else {
+			break
+		}
+	}
+	textGap := bytes.Index(bdata,bquestion[rightind:]) - bytes.Index(bdata,bquestion[0:leftind])
+	queryGap := rightind - leftind
+	accuracy := int((float64(len(bquestion)) - float64(queryGap)) / float64(len(bquestion)) * 100)
+	if (textGap < queryGap + 4)
+	{
+		return true, accuracy, bquestion
+	}
+	return false, 0, bquestion
+
+			
+
+
 }
