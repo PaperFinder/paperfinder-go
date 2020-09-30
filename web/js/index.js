@@ -66,9 +66,7 @@ function onload() {
         var subj = jsonResponse.Subjects.split(",");
         subj.forEach(addcat);
      };
-     if(document.cookie.indexOf('last_pref=') > 0){
-        removeClass(cockiePopup, "popupActive");
-     }
+     
      
      
      xhr.send();
@@ -101,5 +99,6 @@ function get_cookie() {
 function popup_close() {
     removeClass(cockiePopup, "popupActive");
 }
-
+if(document.cookie.indexOf('last_pref=') < 0){
 setTimeout(addClass, 5000, cockiePopup, "popupActive");
+}

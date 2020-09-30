@@ -181,7 +181,7 @@ func main() {
 		subjects := strings.Join(list, ",")
 		if len(context.Request().Cookies()) > 0 { //If cookies exist
 			subjpref := context.GetCookie("last_pref")
-			if subjpref != list[0] {
+			if subjpref != list[0] && subjpref != "none" {
 				list = append(list, list[0])
 				list[0] = subjpref
 				subjects = strings.Join(list, ",")
@@ -194,7 +194,8 @@ func main() {
 	})
 
 	finder.Handle("GET", "/getcookie", func(context iris.Context) {
-		context.SetCookieKV("last_pref", "none", iris.CookieExpires(time.Duration(360)*time.Hour))
+
+		context.SetCookieKV("last_pref", "none", iris.CookieExpires(time.Duration(360)*time.Hour), iris.CookieHTTPOnly(false))
 	})
 
 	finder.Run(iris.Addr(host+":"+strconv.Itoa(port)), iris.WithoutServerError(iris.ErrServerClosed))
