@@ -21,21 +21,20 @@ function search() {
     xhr.send()
         var jsonResponse = JSON.parse(xhr.responseText);
         document.getElementById("result").innerHTML = gabi_content(jsonResponse.Query);
-
         if (jsonResponse.Found == 'True' || jsonResponse.Found == 'Partial') {
             if (jsonResponse.Found != 'Partial'){
-                document.getElementById("result").innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was found in "+ jsonResponse.Paper;
+                resultField.innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was potentially found in "+ jsonResponse.Paper;
             } else {
-                document.getElementById("result").innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was potentially found in "+ jsonResponse.Paper;
+                resultField.innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was  found in "+ jsonResponse.Paper;
             }
-            
-            document.getElementById("qpl").href = jsonResponse.QPL;
-            document.getElementById("msl").href = jsonResponse.MSL;
-            document.getElementById("result").style.display = '';
-            document.getElementById("qpl").style.display = '';
-            document.getElementById("msl").style.display = '';
+            qplButton.href = jsonResponse.QPL;
+            mslButton.href = jsonResponse.MSL;
+    
+            resultField.style.display = '';
+            qplButton.style.display = '';
+            mslButton.style.display = '';
         } else {
-            document.getElementById("result").innerHTML = "\"" + gabi_content(jsonResponse.Query) + "\"was found in no papers"
+            resultField.innerHTML = "\"" + gabi_content(jsonResponse.Query) + "\" was found in no papers";
         }
  };
 
