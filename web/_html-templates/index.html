@@ -1,23 +1,37 @@
-<!DOCTYPE html>
-<html>
-
+<!doctype html>
+<html lang="en">
 <head>
     <title>Paper Finder</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    
+    <meta name="author" content="Paper Finder Team">
+
     <link rel="stylesheet" href="../css/main.css">
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link rel="stylesheet" href="../css/cookie.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     
     <script defer src="../js/index.js"></script>
+    <script src="../js/classes.js"></script>
 </head>
 
 <body onload="onload();">
     <div class="wrapper">
-        <h1><span class="icon" id="book">📖</span>Paper Finder<span class="icon" id="book2">📖</span><span class="icon" id="glass">🔍</span></h1>
-        
-        <form onsubmit="search();return false;">
-            <select name="subject" id="subjects"></select>
-            <input type="search" name="question" id="question" placeholder="Enter your question">
-            <input type="button" id="button" onclick="search()" value="Find my answer">
+        <div id="header">
+            <h1>
+                <span id="book">📖</span>
+                Paper<br id="header-breaker"> Finder
+                <span id="book2">📖</span>
+                <span id="glass">🔍</span>
+            </h1>
+        </div>
 
+        <form onsubmit="search(); return false;">
+            <div id="form-wrapper">
+                <select name="subject" id="subjects"></select>
+                <input type="search" name="question" id="question" placeholder="Enter your question">
+            </div>
+            
+            <input type="button" id="button" onclick="search()" value="Find my answer">
         </form>
 
         <p id="result"></p>
@@ -28,5 +42,20 @@
         </div>
     </div>
 
-    <footer>&copy; <a href="https://github.com/cents02">cents02</a>, <a href="https://github.com/frogstair">frogstair</a>, <a href="https://github.com/danielpancake">danielpancake</a> 2020<br><a href="https://discord.gg/9HrSJ2Q">Find us on discord</a></footer>
+    <footer>
+        &copy; <a href="https://github.com/cents02">cents02</a>, <a href="https://github.com/frogstair">frogstair</a>, <a href="https://github.com/danielpancake">danielpancake</a> 2020
+        <br>
+        <b><a href="https://discord.gg/9HrSJ2Q">Find us on discord</a></b>
+    </footer>
 </body>
+
+<div id="cookiePopup">
+    <div id="cookiePopupClose"><a href="javascript:popup_close()">[ X ] Dismiss</a></div>
+    <p>
+        This website uses cookies. We use cookies only for functional purposes.
+        <br>
+        <a href="javascript:get_cookie()" class="cookiePopupOk">This is fine!</a>
+    </p>
+</div>
+
+</html>

@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/middleware/logger"
@@ -60,7 +61,14 @@ func main() {
 
 		subject := context.URLParam("s")
 		question := context.URLParam("q")
+		if strings.ContainsAny(subject, "./") { //Incase of a path traversal attempt
+			context.JSON(map[string]string{"Error": "500", "Message": "Invalid Subject " + subject})
+			return
+		}
 
+		if len(context.Request().Cookies()) > 0 { //If cookies exist
+			context.SetCookieKV("last_pref", subject)
+		}
 		dir := path.Join("_past-papers", subject)
 
 		results := "not found"
@@ -167,9 +175,24 @@ func main() {
 
 	finder.Handle("GET", "/subjects", func(context iris.Context) {
 		file, _ := os.Open("_past-papers") //Returs a list of all available past papers
-
 		list, _ := file.Readdirnames(0)
-		context.JSON(map[string]string{"Subjects": strings.Join(list, ",")})
+		subjects := strings.Join(list, ",")
+		if len(context.Request().Cookies()) > 0 { //If cookies exist
+			subjpref := context.GetCookie("last_pref")
+			if subjpref != list[0] {
+				list = append(list, list[0])
+				list[0] = subjpref
+				subjects = strings.Join(list, ",")
+				subjects = strings.ReplaceAll(subjects, ","+subjpref, "") //Instead of going through the whole list to find and remove, lets just do this.
+			}
+
+		}
+
+		context.JSON(map[string]string{"Subjects": subjects})
+	})
+
+	finder.Handle("GET", "/getcookie", func(context iris.Context) {
+		context.SetCookieKV("last_pref", "none", iris.CookieExpires(time.Duration(360)*time.Hour))
 	})
 
 	finder.Run(iris.Addr(host+":"+strconv.Itoa(port)), iris.WithoutServerError(iris.ErrServerClosed))

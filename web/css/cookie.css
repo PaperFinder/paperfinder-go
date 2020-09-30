@@ -1,0 +1,32 @@
+#cookiePopup {
+    background: hsl(200, 70%, 70%);
+    bottom: 0;
+    color: white;
+    font-weight: 400;
+    left: 0;
+    padding: 32px;
+    position: fixed;
+    text-shadow: hsl(200, 70%, 50%) 2px 1px 0;
+    transform: translateY(100%);
+    transition: 1s;
+    width: calc(100% - 64px);
+}
+
+#cookiePopup.popupActive {
+    transform: translateY(0) !important;
+}
+
+#cookiePopupClose {
+    float: right;
+    margin: 0 0 0 32px;
+}
+
+#cookiePopup a {
+    color: white;
+    font-weight: 800;
+}
+
+#cookiePopup a:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}
