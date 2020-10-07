@@ -29,7 +29,7 @@ function search() {
         var jsonResponse = JSON.parse(xhr.responseText);
         document.getElementById("result").innerHTML = gabi_content(jsonResponse.Query);
         if (jsonResponse.Found == 'True' || jsonResponse.Found == 'Partial') {
-            if (jsonResponse.Found != 'Partial'){
+            if (jsonResponse.Found == 'Partial'){
                 resultField.innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was potentially found in "+ jsonResponse.Paper;
             } else {
                 resultField.innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was  found in "+ jsonResponse.Paper;
