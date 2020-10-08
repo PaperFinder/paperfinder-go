@@ -124,7 +124,7 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 	} else {
 		return map[string]string{"Query": question, "Found": "True", "Paper": strings.ReplaceAll(papername, ".pdf", ""), "QPL": qpl, "MSL": msl}
 	}
-	return map[string]string{"Query": question, "Found": "AHA", "AHA": strings.ReplaceAll(backuppapername, ".pdf", ""), "QPL": backupqpl, "MSL": backupmsl}
+	return map[string]string{"Query": question, "Found": "False"}
 }
 
 func advsearch(bdata []byte, bquestion []byte) (bool, int, []byte) {
