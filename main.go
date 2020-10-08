@@ -64,7 +64,8 @@ func main() {
 		if len(context.Request().Cookies()) > 0 { //If cookies exist
 			context.SetCookieKV("last_pref", subject, iris.CookieHTTPOnly(false))
 		}
-		context.JSON(query(question, subject, false))
+		result := query(question, subject, false)
+		context.JSON(result)
 	})
 
 	finder.Handle("GET", "/subjects", func(context iris.Context) {

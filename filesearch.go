@@ -21,21 +21,20 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 	dir := path.Join("_past-papers", subject)
 	accuracymin := 60
 	bquestion := []byte(strings.ToLower(string([]rune(question)))) // Convert query to bytes for performance
-	var results string
-	results = "not found"
-	var papername string
-	qpl := ""
-	var msl string
+	var results string = "not found"
+	var papername string = ""
+	var qpl string = ""
+	var msl string = ""
 	//backupfound := false
-
+	//TODO FIX BUG WHICH ASSIGNS ALL VARS TO NILL
 	//backup* are the fallback incase there isn't a perfect match we need to find the closest thing to it
 	//backupque is not used yet. It will be introduced along with the paper text extracting
 	directfind := false
 	var backupbque []byte
 	backupacc := 0
-	var backuppapername string
-	var backupqpl string
-	var backupmsl string
+	var backuppapername string = ""
+	var backupqpl string = ""
+	var backupmsl string = ""
 	// Goes through each paper in the db
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
@@ -88,9 +87,7 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 				qpl = "NA"
 				msl = "NA"
 			}
-			if found || tmpbackupacc == 100 {
-				return io.EOF
-			}
+
 			if tmpBackupfound {
 				backupbque = tmpBackupbque
 				backuppapername = papername
@@ -100,6 +97,9 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 				if true {
 					fmt.Println(string(backupbque))
 				}
+			}
+			if found || tmpbackupacc == 100 {
+				return io.EOF
 			}
 
 		}
@@ -124,7 +124,7 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 	} else {
 		return map[string]string{"Query": question, "Found": "True", "Paper": strings.ReplaceAll(papername, ".pdf", ""), "QPL": qpl, "MSL": msl}
 	}
-	return map[string]string{"Query": question}
+	return map[string]string{"Query": question, "Found": "AHA", "AHA": strings.ReplaceAll(backuppapername, ".pdf", ""), "QPL": backupqpl, "MSL": backupmsl}
 }
 
 func advsearch(bdata []byte, bquestion []byte) (bool, int, []byte) {
