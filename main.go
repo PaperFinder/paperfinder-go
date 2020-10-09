@@ -74,7 +74,7 @@ func main() {
 		subjects := strings.Join(list, ",")
 		if len(context.Request().Cookies()) > 0 { //If cookies exist
 			subjpref := context.GetCookie("last_pref")
-			if subjpref != list[0] && subjpref != "none" {
+			if subjpref != list[0] && subjpref != "none" && subjpref != "" {
 				list = append(list, list[0])
 				list[0] = subjpref
 				subjects = strings.Join(list, ",")

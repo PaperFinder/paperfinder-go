@@ -20,7 +20,7 @@ You know what it is
    - Paper: Full paper name
    - QPL: Question paper link
    - MSL: Mark scheme link
-   - QueN: Question Number
+   - QueN: Question Number  
    Todo:
      - Context: Context of the question
 - /subjects
