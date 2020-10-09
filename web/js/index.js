@@ -24,14 +24,18 @@ function search() {
     xhr.send();
     
 
-    xhr.send()
+    var jsonResponse = JSON.parse(xhr.responseText);
+
         var jsonResponse = JSON.parse(xhr.responseText);
         document.getElementById("result").innerHTML = gabi_content(jsonResponse.Query);
         if (jsonResponse.Found == 'True' || jsonResponse.Found == 'Partial') {
-            if (jsonResponse.Found != 'Partial'){
+            if (jsonResponse.Found == 'Partial'){
                 resultField.innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was potentially found in "+ jsonResponse.Paper;
             } else {
                 resultField.innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was  found in "+ jsonResponse.Paper;
+            }
+            if (jsonResponse.QueN != "") {
+                resultField.innerText += ", question " + jsonResponse.QueN;
             }
             qplButton.href = jsonResponse.QPL;
             mslButton.href = jsonResponse.MSL;
@@ -65,9 +69,7 @@ function onload() {
         var subj = jsonResponse.Subjects.split(",");
         subj.forEach(addcat);
      };
-     if(document.cookie.indexOf('last_pref=') > 0){
-        removeClass(cockiePopup, "popupActive");
-     }
+     
      
      
      xhr.send();
@@ -100,5 +102,6 @@ function get_cookie() {
 function popup_close() {
     removeClass(cockiePopup, "popupActive");
 }
-
+if(document.cookie.indexOf('last_pref=') < 0){
 setTimeout(addClass, 5000, cockiePopup, "popupActive");
+}

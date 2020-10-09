@@ -3,6 +3,7 @@ module paperfinder-go
 go 1.14
 
 require (
+	github.com/go-delve/delve v1.5.0 // indirect
 	github.com/gocolly/colly v1.2.0
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/kataras/iris/v12 v12.1.8
