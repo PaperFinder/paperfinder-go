@@ -34,6 +34,9 @@ function search() {
             } else {
                 resultField.innerText = "\"" + gabi_content(jsonResponse.Query) + "\" was  found in "+ jsonResponse.Paper;
             }
+            if (jsonResponse.QueN != "") {
+                resultField.innerText += ", question " + jsonResponse.QueN;
+            }
             qplButton.href = jsonResponse.QPL;
             mslButton.href = jsonResponse.MSL;
     

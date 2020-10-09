@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -25,6 +26,7 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 	var papername string = ""
 	var qpl string = ""
 	var msl string = ""
+	var quenum string = ""
 	//backupfound := false
 	//TODO FIX BUG WHICH ASSIGNS ALL VARS TO NILL
 	//backup* are the fallback incase there isn't a perfect match we need to find the closest thing to it
@@ -35,6 +37,7 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 	var backuppapername string = ""
 	var backupqpl string = ""
 	var backupmsl string = ""
+	var backupquen string = ""
 	// Goes through each paper in the db
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
@@ -94,11 +97,13 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 				backupqpl = qpl
 				backupmsl = msl
 				backupacc = tmpbackupacc
+				backupquen = findquestion(bdata, tmpBackupbque)
 				if true {
 					fmt.Println(string(backupbque))
 				}
 			}
 			if found || tmpbackupacc == 100 {
+				quenum = findquestion(bdata, bquestion)
 				return io.EOF
 			}
 
@@ -120,20 +125,26 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 		return map[string]string{"Query": question, "Found": "False"}
 		fmt.Println("FAILED QUERY: ", question)
 	} else if !directfind {
-		return map[string]string{"Query": question, "Found": "Partial", "Paper": strings.ReplaceAll(backuppapername, ".pdf", ""), "QPL": backupqpl, "MSL": backupmsl}
+		return map[string]string{"Query": question, "Found": "Partial", "Paper": strings.ReplaceAll(backuppapername, ".pdf", ""), "QPL": backupqpl, "MSL": backupmsl, "QueN": backupquen}
 	} else {
-		return map[string]string{"Query": question, "Found": "True", "Paper": strings.ReplaceAll(papername, ".pdf", ""), "QPL": qpl, "MSL": msl}
+		return map[string]string{"Query": question, "Found": "True", "Paper": strings.ReplaceAll(papername, ".pdf", ""), "QPL": qpl, "MSL": msl, "QueN": quenum}
 	}
 	return map[string]string{"Query": question, "Found": "False"}
 }
+func findquestion(bdata []byte, bquestion []byte) string {
 
+	leftind := bytes.Index(bdata, bquestion)
+	questionnum := regexp.MustCompile(`(?im)Total for Question (?P<num>\d+)`)
+	return string(questionnum.FindSubmatch(bdata[leftind:])[1])
+}
 func advsearch(bdata []byte, bquestion []byte) (bool, int, []byte) {
 
 	if len(bquestion) < 10 { //Being provided with 5 characters, this isn't going to be accurate at all
 		return false, 0, bquestion
 	}
-	if bytes.Contains(bdata, bytes.ReplaceAll(bquestion, []byte("."), []byte(""))) { //Lets attempt to check if full stops stopped us from detecting the paper.
-		return true, 100, bquestion
+	nodots := bytes.ReplaceAll(bquestion, []byte("."), []byte(""))
+	if bytes.Contains(bdata, nodots) { //Lets attempt to check if full stops stopped us from detecting the paper.
+		return true, 100, nodots
 	}
 
 	startind := 1
@@ -154,7 +165,7 @@ func advsearch(bdata []byte, bquestion []byte) (bool, int, []byte) {
 		endind--
 	}
 	if outinaccuracy > 60 {
-		return outinFound, outinaccuracy, bquestion
+		return outinFound, outinaccuracy, bquestion[startind:endind]
 	}
 	/*
 		ok you might be wondering what is going on here
@@ -211,7 +222,7 @@ func advsearch(bdata []byte, bquestion []byte) (bool, int, []byte) {
 	bquestionlength := float64(len(bquestion))
 	accuracy := int(((bquestionlength - float64(textGap)) / bquestionlength) * 100)
 	if accuracy > 90 && accuracy < 100 {
-		return true, accuracy, bquestion
+		return true, accuracy, bquestion[rightind:]
 	}
 	return false, 0, bquestion
 }
