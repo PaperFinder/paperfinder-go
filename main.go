@@ -2,6 +2,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -89,6 +90,11 @@ func main() {
 	finder.Handle("GET", "/getcookie", func(context iris.Context) {
 
 		context.SetCookieKV("last_pref", "none", iris.CookieExpires(time.Duration(360)*time.Hour), iris.CookieHTTPOnly(false))
+	})
+	finder.Handle("POST", "/login", func(context iris.Context) {
+		decoder := json.NewDecoder(context.requst.Body)
+		var t test_struct
+		err := decoder.Decode(&t)
 	})
 
 	finder.Run(iris.Addr(host+":"+strconv.Itoa(port)), iris.WithoutServerError(iris.ErrServerClosed))
