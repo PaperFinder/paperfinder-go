@@ -1,0 +1,13 @@
+<h1>Welcome to the amazing admin page</h1>
+<table id="scrap_targets">
+    <tr>
+        <th>Subject</th>
+        <th>Link</th>
+        <th>Status</th>
+    </tr>
+    {% for target in targetlist %}
+    <tr><td>{{target.0}}</td>
+        <td>{{target.1}}</td>
+        <td>{{target.2}}</td> </tr>
+    {% endfor %}
+</table>

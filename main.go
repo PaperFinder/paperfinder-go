@@ -2,7 +2,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -31,6 +30,9 @@ func main() {
 	port := viper.GetInt("Server.Port")
 	//accuracymin := viper.GetInt("Search.accuracy_cutoff")
 	finder := iris.New()
+	tmpl := iris.Django("./web/views", ".html")
+	tmpl.Reload(true)
+	finder.RegisterView(tmpl)
 	if debug {
 		finder.Logger().SetLevel("debug")
 	}
@@ -88,14 +90,25 @@ func main() {
 	})
 
 	finder.Handle("GET", "/getcookie", func(context iris.Context) {
-
 		context.SetCookieKV("last_pref", "none", iris.CookieExpires(time.Duration(360)*time.Hour), iris.CookieHTTPOnly(false))
 	})
+
+	finder.Handle("GET", "/login", login)
+
 	finder.Handle("POST", "/login", func(context iris.Context) {
-		decoder := json.NewDecoder(context.requst.Body)
-		var t test_struct
-		err := decoder.Decode(&t)
+		name := context.FormValue("username")
+		pass := context.FormValue("password")
+		if !trylogin(name, pass) {
+			login(context)
+		}
+		targetlist := gettargets()
+		context.ViewData("targetlist", targetlist)
+		context.View("admin.html")
+
 	})
 
 	finder.Run(iris.Addr(host+":"+strconv.Itoa(port)), iris.WithoutServerError(iris.ErrServerClosed))
+}
+func login(context iris.Context) {
+	context.ServeFile("./web/_html-templates/login.html", false)
 }
