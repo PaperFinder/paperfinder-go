@@ -128,7 +128,11 @@ func query(question string, subject string, allowadvsearch bool, debug bool) map
 func findquestion(bdata []byte, bquestion []byte) string {
 
 	leftind := bytes.Index(bdata, bquestion)
+	if leftind < 0 {
+		return ""
+	}
 	questionnum := regexp.MustCompile(`(?im)Total for Question (?P<num>\d+)`)
+
 	answer := questionnum.FindSubmatch(bdata[leftind:])
 	if len(answer) > 0 {
 		return string(answer[1])
