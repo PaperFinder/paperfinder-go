@@ -16,8 +16,7 @@ import (
 
 // Queries a question through the papers. Query and subjects are strings to be used for the search
 // Allow advancedsearch is if the slower more thorough mechanism will be used
-func query(question string, subject string, allowadvsearch bool) map[string]string {
-	debug := true
+func query(question string, subject string, allowadvsearch bool, debug bool) map[string]string {
 
 	dir := path.Join("_past-papers", subject)
 	accuracymin := 60
@@ -60,7 +59,6 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 		var tmpBackupbque []byte
 		tmpbackupacc := 0
 		if !found && allowadvsearch {
-			fmt.Println("BACKUP CHECKING: " + path)
 			tmpBackupfound, tmpbackupacc, tmpBackupbque = advsearch(bdata, bquestion)
 		} else if found {
 			directfind = true
@@ -98,9 +96,6 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 				backupmsl = msl
 				backupacc = tmpbackupacc
 				backupquen = findquestion(bdata, tmpBackupbque)
-				if true {
-					fmt.Println(string(backupbque))
-				}
 			}
 			if found || tmpbackupacc == 100 {
 				quenum = findquestion(bdata, bquestion)
@@ -113,9 +108,8 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 	if err != nil && err != io.EOF {
 		panic(err)
 	}
-	fmt.Println(directfind)
 	if !directfind && !allowadvsearch {
-		return query(question, subject, true)
+		return query(question, subject, true, debug)
 	}
 	//If advanced search was used, we need to state what we found
 	if len(question) > 57 {
