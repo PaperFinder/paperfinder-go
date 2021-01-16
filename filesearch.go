@@ -58,6 +58,8 @@ func query(question string, subject string, allowadvsearch bool, debug bool) map
 		tmpBackupfound := false
 		var tmpBackupbque []byte
 		tmpbackupacc := 0
+
+		//If we have gone through all the papers with no luck, lets do it again but thoroughly this time. And lets fine the best match.
 		if !found && allowadvsearch {
 			tmpBackupfound, tmpbackupacc, tmpBackupbque = advsearch(bdata, bquestion)
 		} else if found {
@@ -89,7 +91,7 @@ func query(question string, subject string, allowadvsearch bool, debug bool) map
 				msl = "NA"
 			}
 
-			if tmpBackupfound {
+			if tmpBackupfound { //
 				backupbque = tmpBackupbque
 				backuppapername = papername
 				backupqpl = qpl
@@ -115,7 +117,7 @@ func query(question string, subject string, allowadvsearch bool, debug bool) map
 	if len(question) > 57 {
 		question = question[:57] + "..." //Cut off long questions
 	}
-	if results == "not found" {
+	if results == "not found" || papername == "NA" { //If there is a db error lets just say that we didn't find it :/
 		return map[string]string{"Query": question, "Found": "False"}
 		fmt.Println("FAILED QUERY: ", question)
 	} else if !directfind {
@@ -171,7 +173,7 @@ func advsearch(bdata []byte, bquestion []byte) (bool, int, []byte) {
 	}
 	/*
 		ok you might be wondering what is going on here
-		I wonder too as its 3 am but I will try my best to explaint his madness
+		I wonder too as its 3 am but I will try my best to explain his madness
 		The code below will be run incase the outin fails, which most likely means that the typo is in the middle of the query
 		for that reason, we try to find the most matches from the left and right queary
 		e.g
