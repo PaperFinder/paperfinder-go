@@ -1,4 +1,5 @@
 package main
+
 //Copyright © 2020 cents02
 import (
 	"bytes"
@@ -40,10 +41,14 @@ func main() {
 			fmt.Printf("Link found: %q -> %s\n", e.Text, link)
 			if strings.Contains(link, ".pdf") && strings.Contains(link, "QP") {
 				fmt.Printf("Link found: %q -> %s\n", e.Text, link)
-
+				if paperexists(link) {
+					fmt.Println("~ SKIPPED !~")
+					return
+				}
 				//Here we are filtering out useless stuff
 				tempname := strings.Split(link, "/download/")[1]
 				fpath := strings.ReplaceAll(tempname, "/Past-Papers/", "/")
+				fpath = strings.ReplaceAll(fpath, "/ ", "/") //edge cases
 				fname := fpath[strings.LastIndex(fpath, "/"):]
 				papername := fname[1:]
 				fpath = strings.ReplaceAll(fpath, " ", "-")
@@ -56,6 +61,7 @@ func main() {
 				} else {
 					fname = words[0][1:3] + words[1] + words[2] + ".pdf"
 				}
+
 				pathdir := "../_past-papers/" + fpath[:strings.LastIndex(fpath, "/")+1]
 				fmt.Println("PATHDIR: " + pathdir)
 				fpath = "../_past-papers/" + fpath
@@ -231,4 +237,18 @@ func install(path string, fpapername, fName string, dir string, name string, dur
 	err = ioutil.WriteFile(newName, []byte(strdata), 0644)
 
 	return
+}
+func paperexists(link string) bool {
+	db, err := sql.Open("sqlite3", "../db/papers.db")
+	if err != nil {
+		panic(err)
+	}
+	insertpaper := `SELECT papername FROM paperinfo WHERE qpl = ?`
+	row := db.QueryRow(insertpaper, link)
+	db.Close()
+	var papername string
+	if err := row.Scan(&papername); err != nil {
+		return false
+	}
+	return true
 }
