@@ -48,6 +48,7 @@ func main() {
 				//Here we are filtering out useless stuff
 				tempname := strings.Split(link, "/download/")[1]
 				fpath := strings.ReplaceAll(tempname, "/Past-Papers/", "/")
+				fpath = strings.ReplaceAll(fpath, "/ ", "/") //edge cases
 				fname := fpath[strings.LastIndex(fpath, "/"):]
 				papername := fname[1:]
 				fpath = strings.ReplaceAll(fpath, " ", "-")
