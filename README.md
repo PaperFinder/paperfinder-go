@@ -20,9 +20,9 @@ You know what it is
    - Paper: Full paper name
    - QPL: Question paper link
    - MSL: Mark scheme link
+   - QueN: Question Number  
    Todo:
-   - QN: Question Number
-   - Context: Context of the question
+     - Context: Context of the question
 - /subjects
   **Usage:** /subjects  
   **Response:** A list of subjects seperated by ','  

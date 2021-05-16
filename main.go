@@ -28,6 +28,9 @@ func main() {
 	debug := viper.GetBool("Server.Debug")
 	host := viper.GetString("Server.Host")
 	port := viper.GetInt("Server.Port")
+	certpath := viper.GetString("Server.CertPath")
+	keypath := viper.GetString("Server.KeyPath")
+
 	//accuracymin := viper.GetInt("Search.accuracy_cutoff")
 	finder := iris.New()
 	if debug {
@@ -64,7 +67,7 @@ func main() {
 		if len(context.Request().Cookies()) > 0 { //If cookies exist
 			context.SetCookieKV("last_pref", subject, iris.CookieHTTPOnly(false))
 		}
-		result := query(question, subject, false)
+		result := query(question, subject, false, debug)
 		context.JSON(result)
 	})
 
@@ -74,7 +77,7 @@ func main() {
 		subjects := strings.Join(list, ",")
 		if len(context.Request().Cookies()) > 0 { //If cookies exist
 			subjpref := context.GetCookie("last_pref")
-			if subjpref != list[0] && subjpref != "none" {
+			if subjpref != list[0] && subjpref != "none" && subjpref != "" {
 				list = append(list, list[0])
 				list[0] = subjpref
 				subjects = strings.Join(list, ",")
@@ -90,6 +93,9 @@ func main() {
 
 		context.SetCookieKV("last_pref", "none", iris.CookieExpires(time.Duration(360)*time.Hour), iris.CookieHTTPOnly(false))
 	})
-
-	finder.Run(iris.Addr(host+":"+strconv.Itoa(port)), iris.WithoutServerError(iris.ErrServerClosed))
+	if debug {
+		finder.Run(iris.Addr(host+":"+strconv.Itoa(port)), iris.WithoutServerError(iris.ErrServerClosed))
+	} else {
+		finder.Run(iris.TLS(host+":"+strconv.Itoa(port), certpath, keypath), iris.WithoutServerError(iris.ErrServerClosed))
+	}
 }

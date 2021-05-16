@@ -9,14 +9,14 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
 // Queries a question through the papers. Query and subjects are strings to be used for the search
 // Allow advancedsearch is if the slower more thorough mechanism will be used
-func query(question string, subject string, allowadvsearch bool) map[string]string {
-	debug := true
+func query(question string, subject string, allowadvsearch bool, debug bool) map[string]string {
 
 	dir := path.Join("_past-papers", subject)
 	accuracymin := 60
@@ -25,6 +25,7 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 	var papername string = ""
 	var qpl string = ""
 	var msl string = ""
+	var quenum string = ""
 	//backupfound := false
 	//TODO FIX BUG WHICH ASSIGNS ALL VARS TO NILL
 	//backup* are the fallback incase there isn't a perfect match we need to find the closest thing to it
@@ -35,6 +36,7 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 	var backuppapername string = ""
 	var backupqpl string = ""
 	var backupmsl string = ""
+	var backupquen string = ""
 	// Goes through each paper in the db
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
@@ -56,8 +58,9 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 		tmpBackupfound := false
 		var tmpBackupbque []byte
 		tmpbackupacc := 0
+
+		//If we have gone through all the papers with no luck, lets do it again but thoroughly this time. And lets fine the best match.
 		if !found && allowadvsearch {
-			fmt.Println("BACKUP CHECKING: " + path)
 			tmpBackupfound, tmpbackupacc, tmpBackupbque = advsearch(bdata, bquestion)
 		} else if found {
 			directfind = true
@@ -88,17 +91,16 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 				msl = "NA"
 			}
 
-			if tmpBackupfound {
+			if tmpBackupfound { //
 				backupbque = tmpBackupbque
 				backuppapername = papername
 				backupqpl = qpl
 				backupmsl = msl
 				backupacc = tmpbackupacc
-				if true {
-					fmt.Println(string(backupbque))
-				}
+				backupquen = findquestion(bdata, tmpBackupbque)
 			}
 			if found || tmpbackupacc == 100 {
+				quenum = findquestion(bdata, bquestion)
 				return io.EOF
 			}
 
@@ -108,32 +110,47 @@ func query(question string, subject string, allowadvsearch bool) map[string]stri
 	if err != nil && err != io.EOF {
 		panic(err)
 	}
-	fmt.Println(directfind)
 	if !directfind && !allowadvsearch {
-		return query(question, subject, true)
+		return query(question, subject, true, debug)
 	}
 	//If advanced search was used, we need to state what we found
 	if len(question) > 57 {
 		question = question[:57] + "..." //Cut off long questions
 	}
-	if results == "not found" {
+	if results == "not found" || papername == "NA" { //If there is a db error lets just say that we didn't find it :/
 		return map[string]string{"Query": question, "Found": "False"}
 		fmt.Println("FAILED QUERY: ", question)
 	} else if !directfind {
-		return map[string]string{"Query": question, "Found": "Partial", "Paper": strings.ReplaceAll(backuppapername, ".pdf", ""), "QPL": backupqpl, "MSL": backupmsl}
+		return map[string]string{"Query": question, "Found": "Partial", "Paper": strings.ReplaceAll(backuppapername, ".pdf", ""), "QPL": backupqpl, "MSL": backupmsl, "QueN": backupquen}
 	} else {
-		return map[string]string{"Query": question, "Found": "True", "Paper": strings.ReplaceAll(papername, ".pdf", ""), "QPL": qpl, "MSL": msl}
+		return map[string]string{"Query": question, "Found": "True", "Paper": strings.ReplaceAll(papername, ".pdf", ""), "QPL": qpl, "MSL": msl, "QueN": quenum}
 	}
+  
 	return map[string]string{"Query": question, "Found": "NA", "NA": strings.ReplaceAll(backuppapername, ".pdf", ""), "QPL": backupqpl, "MSL": backupmsl}
-}
 
+}
+func findquestion(bdata []byte, bquestion []byte) string {
+
+	leftind := bytes.Index(bdata, bquestion)
+	if leftind < 0 {
+		return ""
+	}
+	questionnum := regexp.MustCompile(`(?im)Total for Question (?P<num>\d+)`)
+
+	answer := questionnum.FindSubmatch(bdata[leftind:])
+	if len(answer) > 0 {
+		return string(answer[1])
+	}
+	return ""
+}
 func advsearch(bdata []byte, bquestion []byte) (bool, int, []byte) {
 
 	if len(bquestion) < 10 { //Being provided with 5 characters, this isn't going to be accurate at all
 		return false, 0, bquestion
 	}
-	if bytes.Contains(bdata, bytes.ReplaceAll(bquestion, []byte("."), []byte(""))) { //Lets attempt to check if full stops stopped us from detecting the paper.
-		return true, 100, bquestion
+	nodots := bytes.ReplaceAll(bquestion, []byte("."), []byte(""))
+	if bytes.Contains(bdata, nodots) { //Lets attempt to check if full stops stopped us from detecting the paper.
+		return true, 100, nodots
 	}
 
 	startind := 1
@@ -154,11 +171,11 @@ func advsearch(bdata []byte, bquestion []byte) (bool, int, []byte) {
 		endind--
 	}
 	if outinaccuracy > 60 {
-		return outinFound, outinaccuracy, bquestion
+		return outinFound, outinaccuracy, bquestion[startind:endind]
 	}
 	/*
 		ok you might be wondering what is going on here
-		I wonder too as its 3 am but I will try my best to explaint his madness
+		I wonder too as its 3 am but I will try my best to explain his madness
 		The code below will be run incase the outin fails, which most likely means that the typo is in the middle of the query
 		for that reason, we try to find the most matches from the left and right queary
 		e.g
@@ -211,7 +228,7 @@ func advsearch(bdata []byte, bquestion []byte) (bool, int, []byte) {
 	bquestionlength := float64(len(bquestion))
 	accuracy := int(((bquestionlength - float64(textGap)) / bquestionlength) * 100)
 	if accuracy > 90 && accuracy < 100 {
-		return true, accuracy, bquestion
+		return true, accuracy, bquestion[rightind:]
 	}
 	return false, 0, bquestion
 }
