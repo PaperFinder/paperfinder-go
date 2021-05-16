@@ -107,6 +107,17 @@ func main() {
 
 	})
 
+	finder.Handle("POST", "/addpaper",func(context iris.Context) {
+		paperlink := context.FormValue("paperl")
+		markschemel := context.FormValue("markl")
+		subject := context.FormValue("subject")
+		unit := context.FormValue("username") //TODO: Depreciate 
+		eboard := context.FormValue("eboard") //Exam board
+		
+		scrfetch(paperlink,markschemel,subject,unit,eboard)
+		context.return("True")
+		})
+
 	finder.Run(iris.Addr(host+":"+strconv.Itoa(port)), iris.WithoutServerError(iris.ErrServerClosed))
 }
 func login(context iris.Context) {

@@ -69,22 +69,7 @@ func main() {
 					panic(err)
 				}
 				defer out.Close()
-				resp, err := http.Get(link)
-				if err != nil {
-					time.Sleep(5 * time.Second)
-					resp, err = http.Get(link)
-					if err != nil {
-						fmt.Printf("CANT FIND: %q\n", fname)
-					}
-				}
-				defer resp.Body.Close()
-				_, err = io.Copy(out, resp.Body)
-				if err != nil {
-					_, err = io.Copy(out, resp.Body)
-					if err != nil {
-						fmt.Printf("CANT DOWNLOAD: %q\n", fname)
-					}
-				}
+				paper_download(link)
 				fmt.Printf("Downloaded: %q\n", fname)
 				install(fpath, papername, "", pathdir, fname, link, subject, unit)
 				fmt.Printf("Installed: %q\n", fname)
@@ -118,6 +103,25 @@ func main() {
 			panic(err)
 		}
 
+	}
+}
+
+func paper_download(link string) {
+	resp, err := http.Get(link)
+	if err != nil {
+		time.Sleep(5 * time.Second)
+		resp, err = http.Get(link)
+		if err != nil {
+			fmt.Printf("CANT FIND: %q\n", fname)
+		}
+	}
+	defer resp.Body.Close()
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		_, err = io.Copy(out, resp.Body)
+		if err != nil {
+			fmt.Printf("CANT DOWNLOAD: %q\n", fname)
+		}
 	}
 }
 

@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"paperfinder/_filreader"
 )
 
 func gettargets() [][]string {
@@ -21,4 +22,11 @@ func gettargets() [][]string {
 
 	}
 	return targetlist
+}
+
+funnc scrfetch(paperlink string,markschemel string,subject string,unit string,eboard string) {
+	fpath,name := paper_download(paper_link)
+	fname := fpath.filename()
+	install(fpath, name, fname, "", "", paperlink,markschemel,unit) //or something like that
+	return true
 }
