@@ -166,6 +166,8 @@ func install(path string, fpapername, fName string, dir string, name string, dur
 	markRegRound := regexp.MustCompile(`\(\d+\)`)
 	doubleSpace := regexp.MustCompile(`\ {2,}`)
 	unitrgx := regexp.MustCompile(`(Unit? [1-9]+)`)
+	papergx := regexp.MustCompile(`(Paper? [1-9]+)`)
+
 	subjectrgx := regexp.MustCompile(`\w+\sAdvanced`) //regexp doesn't like spaces apparently
 	yearrgx := regexp.MustCompile(`©\d+`)
 
@@ -182,8 +184,13 @@ func install(path string, fpapername, fName string, dir string, name string, dur
 		fmt.Println("unitrgx: " + string(unitrgx.Find(data)))
 		fmt.Println("subjectrgx: " + string(subjectrgx.Find(data)))
 		fmt.Println("yearrgx: " + string(yearrgx.Find(data)))
-
-		unit = strings.Split(string(unitrgx.Find(data)), " ")[1]
+		
+		unit = strings.Split(string(unitrgx.Find(data)), " ")
+		if (len(unit) > 1) {
+			unit = strings.Split(string(unitrgx.Find(data)), " ")[1]
+		} else {
+			unit = strings.Split(string(papergx.Find(data)), " ")[1]
+		}
 		subject = strings.Split(string(subjectrgx.Find(data)), " ")[0]
 		subject = strings.Split(subject, "\n")[0]
 		year := strings.Split(string(yearrgx.Find(data)), "©")[1] //TODO change this to unicode code
